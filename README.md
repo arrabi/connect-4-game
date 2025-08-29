@@ -43,12 +43,40 @@ This is a **client-side only** application built with:
 
 ## Deployment
 
-Since this is a static web app, it can be deployed to any static hosting service:
-- Netlify
-- Vercel  
-- GitHub Pages
-- AWS S3
-- Any web server serving static files
+### 🚀 GitHub Pages (Recommended)
+
+This project is configured for easy deployment to GitHub Pages with automatic builds.
+
+#### Option 1: Automatic Deployment (Recommended)
+1. Push your code to GitHub
+2. Go to your repository settings → Pages
+3. Set source to "GitHub Actions"
+4. The workflow will automatically build and deploy on every push to main
+
+#### Option 2: Manual Deployment
+```bash
+# Install dependencies (if not already done)
+npm install
+
+# Build and deploy to GitHub Pages
+npm run deploy
+```
+
+**Live Demo:** [https://arrabi.github.io/connect-4-game](https://arrabi.github.io/connect-4-game)
+
+### Other Hosting Options
+
+Since this is a static web app, it can also be deployed to:
+- **Netlify** - Drag & drop the `dist` folder
+- **Vercel** - Connect your GitHub repository  
+- **AWS S3** - Upload `dist` folder to S3 bucket
+- **Any web server** - Serve the `dist` folder as static files
+
+#### Build for other platforms:
+```bash
+npm run build
+# Upload the 'dist' folder to your hosting service
+```
 
 ## About
 
