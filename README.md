@@ -1,23 +1,54 @@
-# connect-4-game
-a simple game of connect 4
-
 # Connect 4 Game
 
-This project is a simple web app that allows people to play Connect 4 in their browser.
+A client-side web app for playing Connect 4 in the browser. This is a pure frontend application with no server requirements - all game logic runs locally in your browser.
 
 ## Features
 
-- Classic Connect 4 gameplay
+- **Client-Only Architecture** - No server needed, runs entirely in the browser
+- Classic Connect 4 gameplay with 7x6 grid
+- Local two-player mode
+- Animated disc drop effects and visual feedback
+- Responsive design for desktop and mobile
+- Win detection (horizontal, vertical, diagonal)
+- Game reset functionality
 - Fun and interactive visual effects
-- Playable directly in your web browser
 
 ## Getting Started
 
 1. Clone the repository:
-	```sh
-	git clone <repo-url>
-	```
-2. Follow the instructions to run the app in your browser.
+   ```sh
+   git clone <repo-url>
+   cd connect-4-game
+   ```
+
+2. Install dependencies:
+   ```sh
+   npm install
+   ```
+
+3. Start the development server:
+   ```sh
+   npm run dev
+   ```
+
+4. Open your browser and navigate to the local development URL to start playing!
+
+## Technical Stack
+
+This is a **client-side only** application built with:
+- **React.js** - Component-based UI framework
+- **Vite** - Fast build tool and dev server
+- **CSS** - Styling with animations and responsive design
+- **No Backend** - All game logic runs in the browser
+
+## Deployment
+
+Since this is a static web app, it can be deployed to any static hosting service:
+- Netlify
+- Vercel  
+- GitHub Pages
+- AWS S3
+- Any web server serving static files
 
 ## About
 

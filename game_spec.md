@@ -53,21 +53,27 @@ Milestone 1 delivers the essential gameplay and user experience for a complete, 
 
 ## Technical Recommendations
 
-### Frontend
-- **Framework:** React.js (recommended for component-based UI and state management)
+### Client-Only Architecture
+This is a **client-side only** application with no server-side components required. All game logic, state management, and rendering happens in the browser.
+
+### Frontend Stack
+- **Framework:** React.js (component-based UI and state management)
+- **Build Tool:** Vite (fast development and optimized production builds)
 - **Styling:** CSS Modules or styled-components for scoped styles
-- **Animations:** CSS transitions or a library like Framer Motion
-- **State Management:** React Context or Redux (if app complexity increases)
+- **Animations:** CSS transitions and transforms for smooth visual effects
+- **State Management:** React useState/useCallback hooks (sufficient for local game state)
 
-### Backend (Optional)
-- Not required for local two-player mode
-- If online multiplayer or persistent scores are desired, consider Node.js with Express and a database (e.g., MongoDB)
-
-### Tooling
+### Development Tools
 - **Package Manager:** npm or yarn
-- **Build Tool:** Vite or Create React App
 - **Testing:** Jest and React Testing Library
 - **Version Control:** Git
+- **Deployment:** Static hosting (Netlify, Vercel, GitHub Pages)
+
+### No Backend Required
+- All game logic runs in the browser
+- No server, database, or API endpoints needed
+- Game state is maintained in React component state
+- Perfect for static hosting and offline play
 
 ## MVP Scope
 - Local two-player Connect 4 game
