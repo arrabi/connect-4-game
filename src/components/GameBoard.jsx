@@ -27,15 +27,18 @@ const GameBoard = ({ board, onColumnClick, winningCells, currentPlayer, gameOver
   return (
     <div className="game-board">
       {/* Column headers for clicking */}
-      <div className="column-headers">
+      <div className="column-headers" role="grid" aria-label="Connect 4 game board">
         {Array(7).fill().map((_, col) => (
-          <div
+          <button
             key={col}
             className={`column-header ${gameOver ? 'disabled' : ''} ${getColumnPreview(col) !== null ? 'available' : 'full'}`}
             onClick={() => handleColumnClick(col)}
+            disabled={gameOver || getColumnPreview(col) === null}
+            aria-label={`Drop disc in column ${col + 1}`}
+            title={`Click to drop ${currentPlayer} disc in column ${col + 1}`}
           >
-            <div className={`preview-disc ${currentPlayer}`} />
-          </div>
+            <div className={`preview-disc ${currentPlayer}`} aria-hidden="true" />
+          </button>
         ))}
       </div>
       

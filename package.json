@@ -1,8 +1,28 @@
 {
   "name": "connect-4-game",
   "private": true,
-  "version": "0.1.0",
+  "version": "1.0.0",
+  "description": "A fun, interactive Connect 4 game built with React. Play with friends in your browser with smooth animations and responsive design.",
   "type": "module",
+  "keywords": [
+    "connect-4",
+    "game",
+    "react",
+    "javascript",
+    "browser-game",
+    "two-player",
+    "board-game"
+  ],
+  "author": "arrabi",
+  "license": "MIT",
+  "homepage": "https://github.com/arrabi/connect-4-game",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/arrabi/connect-4-game.git"
+  },
+  "bugs": {
+    "url": "https://github.com/arrabi/connect-4-game/issues"
+  },
   "scripts": {
     "dev": "vite",
     "build": "vite build",

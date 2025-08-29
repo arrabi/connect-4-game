@@ -18,6 +18,19 @@
   border-radius: 50%;
   transition: all 0.2s ease;
   position: relative;
+  background: none;
+  border: 2px solid transparent;
+  outline: none;
+}
+
+.column-header:hover:not(.disabled):not(.full) {
+  background-color: rgba(0, 0, 0, 0.05);
+  transform: scale(1.1);
+}
+
+.column-header:focus-visible {
+  border-color: #3498db;
+  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
 }
 
 .column-header:hover:not(.disabled):not(.full) {
