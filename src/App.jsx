@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react'
 import GameBoard from './components/GameBoard'
 import GameStatus from './components/GameStatus'
+import ConfirmationModal from './components/ConfirmationModal'
 import { checkWinner, checkDraw } from './utils/gameLogic'
 import './App.css'
 
@@ -17,6 +18,7 @@ function App() {
   const [winner, setWinner] = useState(null)
   const [winningCells, setWinningCells] = useState([])
   const [isDraw, setIsDraw] = useState(false)
+  const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
 
   const resetGame = useCallback(() => {
     setBoard(Array(ROWS).fill(null).map(() => Array(COLS).fill(null)))
@@ -24,6 +26,19 @@ function App() {
     setWinner(null)
     setWinningCells([])
     setIsDraw(false)
+  }, [])
+
+  const handleNewGameClick = useCallback(() => {
+    setIsConfirmModalOpen(true)
+  }, [])
+
+  const handleConfirmReset = useCallback(() => {
+    resetGame()
+    setIsConfirmModalOpen(false)
+  }, [resetGame])
+
+  const handleCancelReset = useCallback(() => {
+    setIsConfirmModalOpen(false)
   }, [])
 
   const makeMove = useCallback((col) => {
@@ -73,11 +88,20 @@ function App() {
       <div className="game-container">
         <h1 className="game-title">Connect 4</h1>
         
+        <div className="top-controls">
+          <button 
+            className="new-game-button"
+            onClick={handleNewGameClick}
+            title="Start a new game"
+          >
+            🔄 New Game
+          </button>
+        </div>
+        
         <GameStatus 
           currentPlayer={currentPlayer}
           winner={winner}
           isDraw={isDraw}
-          onReset={resetGame}
         />
         
         <GameBoard 
@@ -86,6 +110,14 @@ function App() {
           winningCells={winningCells}
           currentPlayer={currentPlayer}
           gameOver={winner || isDraw}
+        />
+        
+        <ConfirmationModal 
+          isOpen={isConfirmModalOpen}
+          onConfirm={handleConfirmReset}
+          onCancel={handleCancelReset}
+          title="🔄 Start New Game"
+          message="Are you sure you want to start a new game? The current game will be lost."
         />
       </div>
     </div>
