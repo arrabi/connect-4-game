@@ -2,15 +2,26 @@ import React, { useState } from 'react'
 import ShareModal from './ShareModal'
 import './GameStatus.css'
 
-const GameStatus = ({ currentPlayer, winner, isDraw }) => {
+const GameStatus = ({ currentPlayer, winner, isDraw, gameMode = '2-player', isAIThinking = false }) => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
 
   const getStatusMessage = () => {
     if (winner) {
+      if (gameMode === 'vs-ai') {
+        return winner === 'red' 
+          ? '🎉 You Win! Great job!' 
+          : '🤖 AI Wins! Better luck next time!'
+      }
       return `🎉 ${winner.charAt(0).toUpperCase() + winner.slice(1)} Player Wins!`
     }
     if (isDraw) {
-      return "🤝 It's a Draw!"
+      return gameMode === 'vs-ai' ? "🤝 It's a Draw! Good game!" : "🤝 It's a Draw!"
+    }
+    if (gameMode === 'vs-ai') {
+      if (isAIThinking) {
+        return '🤖 AI is thinking...'
+      }
+      return currentPlayer === 'red' ? 'Your Turn' : 'AI Turn'
     }
     return `${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)} Player's Turn`
   }
@@ -18,6 +29,7 @@ const GameStatus = ({ currentPlayer, winner, isDraw }) => {
   const getPlayerColor = () => {
     if (winner) return winner
     if (isDraw) return 'draw'
+    if (gameMode === 'vs-ai' && isAIThinking) return 'yellow' // AI thinking uses yellow
     return currentPlayer
   }
 
@@ -28,7 +40,11 @@ const GameStatus = ({ currentPlayer, winner, isDraw }) => {
           {getStatusMessage()}
         </div>
         {!isDraw && !winner && (
-          <div className={`current-player-indicator ${currentPlayer}`} />
+          <div className={`current-player-indicator ${currentPlayer}`}>
+            {gameMode === 'vs-ai' && isAIThinking && (
+              <div className="ai-thinking-animation">🤖</div>
+            )}
+          </div>
         )}
       </div>
       

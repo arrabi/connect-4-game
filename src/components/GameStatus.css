@@ -86,6 +86,20 @@
   background: linear-gradient(135deg, #f1c40f 0%, #f39c12 100%);
 }
 
+.ai-thinking-animation {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 14px;
+  animation: pulse 1s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 0.6; transform: translate(-50%, -50%) scale(1.1); }
+}
+
 .reset-button {
   background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
   color: white;

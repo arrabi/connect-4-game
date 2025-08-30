@@ -1,0 +1,153 @@
+.game-mode-selector {
+  background: linear-gradient(135deg, #34495e 0%, #2c3e50 100%);
+  border-radius: 15px;
+  padding: 20px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  color: white;
+}
+
+.mode-selection {
+  margin-bottom: 15px;
+}
+
+.mode-selection h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.mode-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.mode-button {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+  color: white;
+  border: none;
+  padding: 12px 20px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+}
+
+.mode-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.mode-button.active {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+.ai-difficulty-selection {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding-top: 15px;
+}
+
+.ai-difficulty-selection h4 {
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  text-align: center;
+  color: #ecf0f1;
+}
+
+.difficulty-buttons {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.difficulty-button {
+  background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+  min-width: 80px;
+}
+
+.difficulty-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.difficulty-button.easy.active {
+  background: linear-gradient(135deg, #27ae60 0%, #229954 100%);
+  box-shadow: 0 3px 8px rgba(39, 174, 96, 0.4);
+}
+
+.difficulty-button.medium.active {
+  background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+  box-shadow: 0 3px 8px rgba(243, 156, 18, 0.4);
+}
+
+.difficulty-button.hard.active {
+  background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+  box-shadow: 0 3px 8px rgba(231, 76, 60, 0.4);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .game-mode-selector {
+    padding: 15px;
+    margin-bottom: 15px;
+  }
+  
+  .mode-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .mode-button {
+    width: 100%;
+    max-width: 200px;
+  }
+  
+  .difficulty-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .difficulty-button {
+    width: 100%;
+    max-width: 150px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-mode-selector {
+    padding: 12px;
+  }
+  
+  .mode-selection h3 {
+    font-size: 1.1rem;
+  }
+  
+  .ai-difficulty-selection h4 {
+    font-size: 0.9rem;
+  }
+  
+  .mode-button {
+    padding: 10px 16px;
+    font-size: 0.9rem;
+  }
+  
+  .difficulty-button {
+    padding: 8px 14px;
+    font-size: 0.8rem;
+  }
+}
