@@ -6,6 +6,35 @@
   margin-bottom: 20px;
 }
 
+.game-buttons {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.share-button {
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 25px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(155, 89, 182, 0.3);
+}
+
+.share-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(155, 89, 182, 0.4);
+  background: linear-gradient(135deg, #8e44ad 0%, #7d3c98 100%);
+}
+
+.share-button:active {
+  transform: translateY(0);
+}
+
 .status-message {
   display: flex;
   align-items: center;
@@ -104,7 +133,11 @@
     height: 25px;
   }
   
-  .reset-button {
+  .game-buttons {
+    gap: 12px;
+  }
+  
+  .reset-button, .share-button {
     padding: 10px 20px;
     font-size: 0.9rem;
   }
@@ -126,5 +159,16 @@
   .current-player-indicator {
     width: 20px;
     height: 20px;
+  }
+  
+  .game-buttons {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .reset-button, .share-button {
+    width: 100%;
+    padding: 12px 20px;
   }
 }

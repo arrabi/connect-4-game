@@ -8,7 +8,7 @@ A client-side web app for playing Connect 4 in the browser. This is a pure front
 
 **Scan to play instantly on your phone!**
 
-![QR Code](qr-code.svg)
+<img src="qr-code.svg" alt="QR Code for Connect 4 Game" width="200" height="200" style="max-width: 100%; height: auto;">
 
 **🔗 [Play Now: https://arrabi.github.io/connect-4-game](https://arrabi.github.io/connect-4-game)**
 

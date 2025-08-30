@@ -64,3 +64,6 @@ jspm_packages/
 
 # QR code generation script (keep the generated files)
 generate-qr.js
+
+# Keep public folder and its contents (contains QR code)
+# public/ - commented out to keep QR code accessible

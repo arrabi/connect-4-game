@@ -1,7 +1,10 @@
-import React from 'react'
+import React, { useState } from 'react'
+import ShareModal from './ShareModal'
 import './GameStatus.css'
 
 const GameStatus = ({ currentPlayer, winner, isDraw, onReset }) => {
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false)
+
   const getStatusMessage = () => {
     if (winner) {
       return `🎉 ${winner.charAt(0).toUpperCase() + winner.slice(1)} Player Wins!`
@@ -29,12 +32,27 @@ const GameStatus = ({ currentPlayer, winner, isDraw, onReset }) => {
         )}
       </div>
       
-      <button 
-        className="reset-button"
-        onClick={onReset}
-      >
-        🔄 New Game
-      </button>
+      <div className="game-buttons">
+        <button 
+          className="share-button"
+          onClick={() => setIsShareModalOpen(true)}
+          title="Share this game with friends"
+        >
+          📱 Share
+        </button>
+        
+        <button 
+          className="reset-button"
+          onClick={onReset}
+        >
+          🔄 New Game
+        </button>
+      </div>
+
+      <ShareModal 
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+      />
     </div>
   )
 }

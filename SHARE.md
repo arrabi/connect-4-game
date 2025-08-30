@@ -2,7 +2,9 @@
 
 ## 📱 Scan to Play Instantly
 
-![QR Code for Connect 4 Game](qr-code.svg)
+<div align="center">
+<img src="qr-code.svg" alt="QR Code for Connect 4 Game" width="200" height="200" style="max-width: 100%; height: auto;">
+</div>
 
 ### Quick Share Options:
 
