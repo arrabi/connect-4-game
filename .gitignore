@@ -61,3 +61,6 @@ jspm_packages/
 
 # Yarn Integrity file
 .yarn-integrity
+
+# QR code generation script (keep the generated files)
+generate-qr.js

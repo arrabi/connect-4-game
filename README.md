@@ -2,6 +2,18 @@
 
 A client-side web app for playing Connect 4 in the browser. This is a pure frontend application with no server requirements - all game logic runs locally in your browser.
 
+## 📱 Quick Play - Scan QR Code
+
+<div align="center">
+
+**Scan to play instantly on your phone!**
+
+![QR Code](qr-code.svg)
+
+**🔗 [Play Now: https://arrabi.github.io/connect-4-game](https://arrabi.github.io/connect-4-game)**
+
+</div>
+
 ## Features
 
 - **Client-Only Architecture** - No server needed, runs entirely in the browser
