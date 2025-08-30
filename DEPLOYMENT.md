@@ -1,19 +1,24 @@
 # 🚀 GitHub Pages Deployment Guide
 
-## Quick Setup Steps
+## ✅ Automatic Deployment (Already Configured!)
 
-### 1. Push to GitHub
-Make sure your code is pushed to a GitHub repository named `connect-4-game`.
+This repository is configured for **automatic deployment** to GitHub Pages:
 
-### 2. Enable GitHub Pages
+### How it works:
+1. **Push to main branch** → Automatic deployment triggers
+2. **GitHub Actions** builds and deploys your app
+3. **Live in ~2-3 minutes** at: https://arrabi.github.io/connect-4-game
+
+### Setup Steps (One-time only):
 1. Go to your repository on GitHub
 2. Click **Settings** tab
 3. Scroll down to **Pages** section
 4. Set **Source** to "GitHub Actions"
 
-### 3. Automatic Deployment
-- The GitHub Actions workflow will automatically trigger on pushes to `main`
-- Your game will be available at: `https://yourusername.github.io/connect-4-game`
+### That's it! 🎉
+- Every push to `main` automatically deploys
+- Check the **Actions** tab to see deployment status
+- Manual deployments also available via workflow dispatch
 
 ## Manual Deployment (Alternative)
 

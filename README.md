@@ -1,5 +1,7 @@
 # Connect 4 Game
 
+[![Deploy to GitHub Pages](https://github.com/arrabi/connect-4-game/actions/workflows/deploy.yml/badge.svg)](https://github.com/arrabi/connect-4-game/actions/workflows/deploy.yml)
+
 A client-side web app for playing Connect 4 in the browser. This is a pure frontend application with no server requirements - all game logic runs locally in your browser.
 
 ## 📱 Quick Play - Scan QR Code
@@ -55,24 +57,15 @@ This is a **client-side only** application built with:
 
 ## Deployment
 
-### 🚀 GitHub Pages (Recommended)
+### 🚀 GitHub Pages (Automatic Deployment)
 
-This project is configured for easy deployment to GitHub Pages with automatic builds.
+This project automatically deploys to GitHub Pages on every push to the main branch.
 
-#### Option 1: Automatic Deployment (Recommended)
+#### Setup (One-time):
 1. Push your code to GitHub
-2. Go to your repository settings → Pages
+2. Go to repository Settings → Pages
 3. Set source to "GitHub Actions"
-4. The workflow will automatically build and deploy on every push to main
-
-#### Option 2: Manual Deployment
-```bash
-# Install dependencies (if not already done)
-npm install
-
-# Build and deploy to GitHub Pages
-npm run deploy
-```
+4. Every push to main will automatically deploy!
 
 **Live Demo:** [https://arrabi.github.io/connect-4-game](https://arrabi.github.io/connect-4-game)
 
