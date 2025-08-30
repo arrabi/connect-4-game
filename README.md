@@ -27,10 +27,11 @@ A client-side web app for playing Connect 4 in the browser. This is a pure front
   - **Medium**: Strategic play - blocks wins and creates opportunities
   - **Hard**: Advanced Minimax algorithm - maximum challenge
 - Animated disc drop effects and visual feedback
+- **Enhanced Winning Visual Effects** - Color-coordinated glow and pulse animations for winning discs
 - Responsive design for desktop and mobile
 - Win detection (horizontal, vertical, diagonal)
 - Game reset functionality
-- Fun and interactive visual effects
+- Immersive visual effects without distracting overlays
 
 ## Getting Started
 
