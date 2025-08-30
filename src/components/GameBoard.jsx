@@ -1,5 +1,6 @@
 import React, { useState, useCallback, useRef } from 'react'
 import Cell from './Cell'
+import WinningLine from './WinningLine'
 import './GameBoard.css'
 
 const GameBoard = ({ board, onColumnClick, winningCells, currentPlayer, gameOver }) => {
@@ -169,6 +170,13 @@ const GameBoard = ({ board, onColumnClick, winningCells, currentPlayer, gameOver
           ))
         )}
       </div>
+      
+      {/* Winning line overlay */}
+      {winningCells.length > 0 && (
+        <WinningLine 
+          winningCells={winningCells}
+        />
+      )}
     </div>
   )
 }

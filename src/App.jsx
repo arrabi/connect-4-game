@@ -1,8 +1,10 @@
 import React, { useState, useCallback } from 'react'
 import GameBoard from './components/GameBoard'
 import GameStatus from './components/GameStatus'
+import SoundControls from './components/SoundControls'
 import ConfirmationModal from './components/ConfirmationModal'
 import { checkWinner, checkDraw } from './utils/gameLogic'
+import soundManager from './utils/soundManager'
 import './App.css'
 
 const ROWS = 6
@@ -55,6 +57,9 @@ function App() {
 
     if (row === -1) return false // Column is full
 
+    // Play drop sound
+    soundManager.playSound('drop')
+
     // Create new board with the move
     const newBoard = board.map((boardRow, rowIndex) =>
       boardRow.map((cell, colIndex) =>
@@ -69,12 +74,20 @@ function App() {
     if (winResult) {
       setWinner(currentPlayer)
       setWinningCells(winResult.cells)
+      // Play win/lose sounds
+      setTimeout(() => {
+        soundManager.playSound('win')
+      }, 300) // Slight delay for drop sound to finish
       return true
     }
 
     // Check for draw
     if (checkDraw(newBoard)) {
       setIsDraw(true)
+      // Play draw sound
+      setTimeout(() => {
+        soundManager.playSound('draw')
+      }, 300)
       return true
     }
 
@@ -96,6 +109,8 @@ function App() {
           >
             🔄 New Game
           </button>
+          
+          <SoundControls />
         </div>
         
         <GameStatus 
