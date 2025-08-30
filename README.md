@@ -22,10 +22,11 @@ A client-side web app for playing Connect 4 in the browser. This is a pure front
 - Classic Connect 4 gameplay with 7x6 grid
 - Local two-player mode
 - Animated disc drop effects and visual feedback
+- **Enhanced Winning Visual Effects** - Color-coordinated glow and pulse animations for winning discs
 - Responsive design for desktop and mobile
 - Win detection (horizontal, vertical, diagonal)
 - Game reset functionality
-- Fun and interactive visual effects
+- Immersive visual effects without distracting overlays
 
 ## Getting Started
 
