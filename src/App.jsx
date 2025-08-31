@@ -66,8 +66,15 @@ function App() {
 
   // Start new game with player setup
   const startNewGame = useCallback(() => {
-    // For vs-ai mode, only setup player 1
-    if (gameMode === 'vs-ai') {
+    if (gameMode === 'ai-vs-ai') {
+      // For AI vs AI mode, skip player setup entirely
+      setPlayer1Name('') // No human players
+      setPlayer2Name('')
+      setSetupPlayer(null)
+      setIsPlayerSetupOpen(false)
+      resetGame()
+    } else if (gameMode === 'vs-ai') {
+      // For vs-ai mode, only setup player 1
       setSetupPlayer('red')
       setIsPlayerSetupOpen(true)
     } else {
@@ -75,7 +82,7 @@ function App() {
       setSetupPlayer('red')
       setIsPlayerSetupOpen(true)
     }
-  }, [gameMode])
+  }, [gameMode, resetGame])
 
   // Initialize player setup on first load
   useEffect(() => {
@@ -93,13 +100,14 @@ function App() {
         // Setup player 2 next
         setSetupPlayer('yellow')
         // Keep modal open for player 2
-      } else {
+      } else if (gameMode === 'vs-ai') {
         // vs-ai mode, only player 1 needed
         setPlayer2Name('') // AI has no name
         setSetupPlayer(null)
         setIsPlayerSetupOpen(false)
         resetGame()
       }
+      // Note: ai-vs-ai mode should never reach here as it skips player setup entirely
     } else if (setupPlayer === 'yellow') {
       setPlayer2Name(playerName)
       setSetupPlayer(null)
