@@ -53,6 +53,30 @@
   word-break: break-word;
 }
 
+.set-name-button {
+  background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+  color: white;
+  border: none;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.2);
+}
+
+.set-name-button:hover {
+  background: linear-gradient(135deg, #2980b9 0%, #3498db 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 3px 6px rgba(52, 152, 219, 0.3);
+}
+
+.set-name-button:active {
+  transform: translateY(0);
+  box-shadow: 0 1px 3px rgba(52, 152, 219, 0.2);
+}
+
 .player-indicator {
   width: 16px;
   height: 16px;

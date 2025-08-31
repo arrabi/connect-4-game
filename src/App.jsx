@@ -66,32 +66,23 @@ function App() {
     setGameDuration(0)
   }, [])
 
-  // Start new game with player setup
+  // Start new game with optional player setup
   const startNewGame = useCallback(() => {
-    if (gameMode === 'ai-vs-ai') {
-      // For AI vs AI mode, skip player setup entirely
-      setPlayer1Name('') // No human players
-      setPlayer2Name('')
-      setSetupPlayer(null)
-      setIsPlayerSetupOpen(false)
-      resetGame()
-    } else if (gameMode === 'vs-ai') {
-      // For vs-ai mode, only setup player 1
-      setSetupPlayer('red')
-      setIsPlayerSetupOpen(true)
-    } else {
-      // For 2-player mode, setup both players
-      setSetupPlayer('red')
-      setIsPlayerSetupOpen(true)
-    }
-  }, [gameMode, resetGame])
+    // Reset player names and start game immediately
+    setPlayer1Name('')
+    setPlayer2Name('')
+    setSetupPlayer(null)
+    setIsPlayerSetupOpen(false)
+    resetGame()
+  }, [resetGame])
 
   // Initialize player setup on first load
   useEffect(() => {
-    if (!player1Name && !gameStartTime) {
-      startNewGame()
+    if (!gameStartTime) {
+      // Start the game immediately without player setup for better UX
+      resetGame()
     }
-  }, [startNewGame, player1Name, gameStartTime])
+  }, [resetGame, gameStartTime])
 
   // Handle player setup completion
   const handlePlayerSetup = useCallback((playerName) => {
@@ -147,6 +138,11 @@ function App() {
 
   const toggleControlsVisibility = useCallback(() => {
     setIsControlsVisible(prev => !prev)
+  }, [])
+
+  const openPlayerSetup = useCallback((player) => {
+    setSetupPlayer(player)
+    setIsPlayerSetupOpen(true)
   }, [])
 
   const handleGameModeChange = useCallback((mode) => {
@@ -574,6 +570,7 @@ function App() {
           player2Name={player2Name}
           gameDuration={gameDuration}
           gameStartTime={gameStartTime}
+          onOpenPlayerSetup={openPlayerSetup}
         />
         
         <GameBoard 

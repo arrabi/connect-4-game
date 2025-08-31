@@ -14,7 +14,8 @@ const GameStatus = ({
   player1Name = '',
   player2Name = '',
   gameDuration = 0,
-  gameStartTime = null
+  gameStartTime = null,
+  onOpenPlayerSetup
 }) => {
   const [isShareModalOpen, setIsShareModalOpen] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -45,7 +46,9 @@ const GameStatus = ({
           ? '🔴 AI Player 1 Wins!' 
           : '🟡 AI Player 2 Wins!'
       }
-      const winnerName = winner === 'red' ? (player1Name || 'Red Player') : (player2Name || 'Yellow Player')
+      const winnerName = winner === 'red' 
+        ? (player1Name || 'Red Player') 
+        : (player2Name || 'Yellow Player')
       return `🎉 ${winnerName} Wins!`
     }
     if (isDraw) {
@@ -115,7 +118,17 @@ const GameStatus = ({
           <div className="player-info">
             <div className="player-header">
               <span className="player-label">🎮 Player</span>
-              {player1Name && <span className="player-name">{player1Name}</span>}
+              {player1Name ? (
+                <span className="player-name">{player1Name}</span>
+              ) : (
+                <button 
+                  className="set-name-button"
+                  onClick={() => onOpenPlayerSetup && onOpenPlayerSetup('red')}
+                  title="Set your name to track scores"
+                >
+                  📝 Set Name
+                </button>
+              )}
             </div>
             {player1Name && (
               <div className="player-stats">
@@ -141,7 +154,17 @@ const GameStatus = ({
             <div className="player-info player-1">
               <div className="player-header">
                 <span className="player-indicator red"></span>
-                <span className="player-name">{player1Name || 'Red Player'}</span>
+                {player1Name ? (
+                  <span className="player-name">{player1Name}</span>
+                ) : (
+                  <button 
+                    className="set-name-button"
+                    onClick={() => onOpenPlayerSetup && onOpenPlayerSetup('red')}
+                    title="Set player 1 name"
+                  >
+                    📝 Set Name
+                  </button>
+                )}
               </div>
               {player1Name && (
                 <div className="player-stats">
@@ -164,7 +187,17 @@ const GameStatus = ({
             <div className="player-info player-2">
               <div className="player-header">
                 <span className="player-indicator yellow"></span>
-                <span className="player-name">{player2Name || 'Yellow Player'}</span>
+                {player2Name ? (
+                  <span className="player-name">{player2Name}</span>
+                ) : (
+                  <button 
+                    className="set-name-button"
+                    onClick={() => onOpenPlayerSetup && onOpenPlayerSetup('yellow')}
+                    title="Set player 2 name"
+                  >
+                    📝 Set Name
+                  </button>
+                )}
               </div>
               {player2Name && (
                 <div className="player-stats">
