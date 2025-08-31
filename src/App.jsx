@@ -5,6 +5,7 @@ import GameModeSelector from './components/GameModeSelector'
 import SoundControls from './components/SoundControls'
 import ConfirmationModal from './components/ConfirmationModal'
 import PlayerSetup from './components/PlayerSetup'
+import Leaderboard from './components/Leaderboard'
 import { checkWinner, checkDraw } from './utils/gameLogic'
 import { getAIMove } from './utils/aiLogic'
 import soundManager from './utils/soundManager'
@@ -39,6 +40,9 @@ function App() {
   const [gameStartTime, setGameStartTime] = useState(null)
   const [gameEndTime, setGameEndTime] = useState(null)
   const [gameDuration, setGameDuration] = useState(0)
+  
+  // Leaderboard state
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false)
 
   const resetGame = useCallback(() => {
     setBoard(Array(ROWS).fill(null).map(() => Array(COLS).fill(null)))
@@ -347,6 +351,14 @@ function App() {
             🔄 New Game
           </button>
           
+          <button 
+            className="leaderboard-button"
+            onClick={() => setIsLeaderboardOpen(true)}
+            title="View leaderboard and player rankings"
+          >
+            🏆 Leaderboard
+          </button>
+          
           <SoundControls />
         </div>
         
@@ -390,6 +402,11 @@ function App() {
           onClose={() => setIsPlayerSetupOpen(false)}
           onPlayerSetup={handlePlayerSetup}
           currentPlayer={setupPlayer}
+        />
+
+        <Leaderboard
+          isOpen={isLeaderboardOpen}
+          onClose={() => setIsLeaderboardOpen(false)}
         />
       </div>
     </div>

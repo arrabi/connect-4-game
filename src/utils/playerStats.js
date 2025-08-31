@@ -136,6 +136,41 @@ class PlayerStatsManager {
       return false
     }
   }
+
+  // Get all players sorted for leaderboard
+  getLeaderboard() {
+    const players = Object.values(this.stats)
+    
+    // Only include players who have played at least one game
+    const activePlayers = players.filter(player => player.gamesPlayed > 0)
+    
+    // Sort by: 1) Win percentage (desc), 2) Total wins (desc), 3) Games played (desc)
+    return activePlayers.sort((a, b) => {
+      const aWinRate = a.gamesPlayed > 0 ? (a.wins / a.gamesPlayed) * 100 : 0
+      const bWinRate = b.gamesPlayed > 0 ? (b.wins / b.gamesPlayed) * 100 : 0
+      
+      // Primary sort: Win percentage (descending)
+      if (Math.abs(aWinRate - bWinRate) > 0.1) {
+        return bWinRate - aWinRate
+      }
+      
+      // Secondary sort: Total wins (descending)
+      if (a.wins !== b.wins) {
+        return b.wins - a.wins
+      }
+      
+      // Tertiary sort: Games played (descending)
+      return b.gamesPlayed - a.gamesPlayed
+    }).map((player, index) => ({
+      rank: index + 1,
+      ...this.getFormattedStats(player.name)
+    }))
+  }
+
+  // Get total number of active players
+  getActivePlayerCount() {
+    return Object.values(this.stats).filter(player => player.gamesPlayed > 0).length
+  }
 }
 
 // Create a singleton instance
