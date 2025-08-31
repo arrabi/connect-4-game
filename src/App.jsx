@@ -5,6 +5,7 @@ import GameModeSelector from './components/GameModeSelector'
 import SoundControls from './components/SoundControls'
 import ConfirmationModal from './components/ConfirmationModal'
 import PlayerSetup from './components/PlayerSetup'
+import Leaderboard from './components/Leaderboard'
 import { checkWinner, checkDraw } from './utils/gameLogic'
 import { getAIMove, getAIMoveWithDepth } from './utils/aiLogic'
 import soundManager from './utils/soundManager'
@@ -28,6 +29,7 @@ function App() {
   const [gameMode, setGameMode] = useState('2-player') // '2-player', 'vs-ai', or 'ai-vs-ai'
   const [aiDifficulty, setAIDifficulty] = useState('medium')
   const [isAIThinking, setIsAIThinking] = useState(false)
+  const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false)
   
   // AI vs AI mode state
   const [ai1Depth, setAI1Depth] = useState(4)
@@ -123,6 +125,14 @@ function App() {
 
   const handleCancelReset = useCallback(() => {
     setIsConfirmModalOpen(false)
+  }, [])
+
+  const handleLeaderboardOpen = useCallback(() => {
+    setIsLeaderboardOpen(true)
+  }, [])
+
+  const handleLeaderboardClose = useCallback(() => {
+    setIsLeaderboardOpen(false)
   }, [])
 
   const handleGameModeChange = useCallback((mode) => {
@@ -483,6 +493,14 @@ function App() {
             🔄 New Game
           </button>
           
+          <button 
+            className="leaderboard-button"
+            onClick={handleLeaderboardOpen}
+            title="View leaderboard"
+          >
+            🏆 Leaderboard
+          </button>
+          
           <SoundControls />
         </div>
         
@@ -544,6 +562,11 @@ function App() {
           onClose={() => setIsPlayerSetupOpen(false)}
           onPlayerSetup={handlePlayerSetup}
           currentPlayer={setupPlayer}
+        />
+
+        <Leaderboard
+          isOpen={isLeaderboardOpen}
+          onClose={handleLeaderboardClose}
         />
       </div>
     </div>

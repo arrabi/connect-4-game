@@ -136,6 +136,60 @@ class PlayerStatsManager {
       return false
     }
   }
+
+  // Get all players for leaderboard, sorted by criteria
+  getLeaderboardData(sortBy = 'winRate') {
+    const players = Object.values(this.stats)
+    if (players.length === 0) return []
+
+    // Calculate additional stats for each player
+    const playersWithStats = players.map(player => {
+      const winRate = player.gamesPlayed > 0 ? (player.wins / player.gamesPlayed) * 100 : 0
+      const avgGameTime = player.gamesPlayed > 0 ? player.totalGameTime / player.gamesPlayed : 0
+      
+      return {
+        ...player,
+        winRateNumber: winRate,
+        winRateFormatted: `${winRate.toFixed(1)}%`,
+        avgGameTimeFormatted: this.formatTime(Math.round(avgGameTime)),
+        bestTimeFormatted: player.bestTime ? this.formatTime(player.bestTime) : 'N/A',
+        lastPlayedFormatted: player.lastPlayed ? new Date(player.lastPlayed).toLocaleDateString() : 'Never'
+      }
+    })
+
+    // Sort players based on criteria
+    return playersWithStats.sort((a, b) => {
+      switch (sortBy) {
+        case 'winRate':
+          // Sort by win rate (higher is better), then by games played
+          if (a.winRateNumber !== b.winRateNumber) {
+            return b.winRateNumber - a.winRateNumber
+          }
+          return b.gamesPlayed - a.gamesPlayed
+        case 'wins':
+          return b.wins - a.wins
+        case 'gamesPlayed':
+          return b.gamesPlayed - a.gamesPlayed
+        case 'lastPlayed':
+          // Sort by last played date (most recent first)
+          if (!a.lastPlayed) return 1
+          if (!b.lastPlayed) return -1
+          return new Date(b.lastPlayed) - new Date(a.lastPlayed)
+        default:
+          return b.winRateNumber - a.winRateNumber
+      }
+    })
+  }
+
+  // Get total number of players
+  getTotalPlayers() {
+    return Object.keys(this.stats).length
+  }
+
+  // Get total games played across all players
+  getTotalGamesPlayed() {
+    return Object.values(this.stats).reduce((total, player) => total + player.gamesPlayed, 0)
+  }
 }
 
 // Create a singleton instance
