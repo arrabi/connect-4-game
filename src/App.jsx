@@ -30,6 +30,7 @@ function App() {
   const [aiDifficulty, setAIDifficulty] = useState('medium')
   const [isAIThinking, setIsAIThinking] = useState(false)
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false)
+  const [isControlsVisible, setIsControlsVisible] = useState(true)
   
   // AI vs AI mode state
   const [ai1Depth, setAI1Depth] = useState(4)
@@ -142,6 +143,10 @@ function App() {
 
   const handleLeaderboardClose = useCallback(() => {
     setIsLeaderboardOpen(false)
+  }, [])
+
+  const toggleControlsVisibility = useCallback(() => {
+    setIsControlsVisible(prev => !prev)
   }, [])
 
   const handleGameModeChange = useCallback((mode) => {
@@ -502,24 +507,34 @@ function App() {
       <div className="game-container">
         <h1 className="game-title">Connect 4</h1>
         
-        <div className="top-controls">
+        <div className="controls-section">
           <button 
-            className="new-game-button"
-            onClick={handleNewGameClick}
-            title="Start a new game"
+            className="controls-toggle"
+            onClick={toggleControlsVisibility}
+            title={isControlsVisible ? "Hide controls" : "Show controls"}
           >
-            🔄 New Game
+            {isControlsVisible ? "🔽 Hide Controls" : "🔼 Show Controls"}
           </button>
           
-          <button 
-            className="leaderboard-button"
-            onClick={handleLeaderboardOpen}
-            title="View leaderboard"
-          >
-            🏆 Leaderboard
-          </button>
-          
-          <SoundControls />
+          <div className={`top-controls ${isControlsVisible ? 'visible' : 'hidden'}`}>
+            <button 
+              className="new-game-button"
+              onClick={handleNewGameClick}
+              title="Start a new game"
+            >
+              🔄 New Game
+            </button>
+            
+            <button 
+              className="leaderboard-button"
+              onClick={handleLeaderboardOpen}
+              title="View leaderboard"
+            >
+              🏆 Leaderboard
+            </button>
+            
+            <SoundControls />
+          </div>
         </div>
         
         <GameModeSelector
