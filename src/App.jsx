@@ -34,6 +34,7 @@ function App() {
   // AI vs AI mode state
   const [ai1Depth, setAI1Depth] = useState(4)
   const [ai2Depth, setAI2Depth] = useState(6)
+  const [aiDepth, setAIDepth] = useState(6) // For vs-AI hard mode
   const [ai1Thinking, setAI1Thinking] = useState(false)
   const [ai2Thinking, setAI2Thinking] = useState(false)
   const [waitingForNextMove, setWaitingForNextMove] = useState(false)
@@ -169,6 +170,10 @@ function App() {
     setAI2Depth(depth)
   }, [])
 
+  const handleAIDepthChange = useCallback((depth) => {
+    setAIDepth(depth)
+  }, [])
+
   const handleNextMove = useCallback(() => {
     if (gameMode === 'ai-vs-ai' && waitingForNextMove && !winner && !isDraw) {
       setWaitingForNextMove(false)
@@ -289,7 +294,14 @@ function App() {
       const aiMoveDelay = aiDifficulty === 'hard' ? 1500 : aiDifficulty === 'medium' ? 1000 : 500
       
       setTimeout(() => {
-        const aiCol = getAIMove(board, aiDifficulty)
+        let aiCol
+        if (aiDifficulty === 'hard') {
+          // Use custom depth for hard AI
+          aiCol = getAIMoveWithDepth(board, PLAYER2, aiDepth)
+        } else {
+          // Use standard difficulty logic for easy and medium
+          aiCol = getAIMove(board, aiDifficulty)
+        }
         if (aiCol !== null) {
           // Simulate AI move by calling makeMove directly with AI logic
           const aiMakeMove = (col) => {
@@ -376,7 +388,7 @@ function App() {
         }
       }, aiMoveDelay)
     }
-  }, [board, currentPlayer, winner, isDraw, gameMode, aiDifficulty, isAIThinking, gameStartTime, player1Name])
+  }, [board, currentPlayer, winner, isDraw, gameMode, aiDifficulty, aiDepth, isAIThinking, gameStartTime, player1Name])
 
   // AI vs AI move effect - triggers when it's an AI's turn in AI vs AI mode
   useEffect(() => {
@@ -515,10 +527,12 @@ function App() {
           aiDifficulty={aiDifficulty}
           ai1Depth={ai1Depth}
           ai2Depth={ai2Depth}
+          aiDepth={aiDepth}
           onGameModeChange={handleGameModeChange}
           onAIDifficultyChange={handleAIDifficultyChange}
           onAI1DepthChange={handleAI1DepthChange}
           onAI2DepthChange={handleAI2DepthChange}
+          onAIDepthChange={handleAIDepthChange}
         />
         
         {gameMode === 'ai-vs-ai' && waitingForNextMove && !winner && !isDraw && (

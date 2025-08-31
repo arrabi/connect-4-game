@@ -6,10 +6,12 @@ const GameModeSelector = ({
   aiDifficulty, 
   ai1Depth, 
   ai2Depth, 
+  aiDepth,
   onGameModeChange, 
   onAIDifficultyChange, 
   onAI1DepthChange, 
-  onAI2DepthChange 
+  onAI2DepthChange,
+  onAIDepthChange
 }) => {
   return (
     <div className="game-mode-selector">
@@ -63,6 +65,27 @@ const GameModeSelector = ({
               😈 Hard
             </button>
           </div>
+          
+          {aiDifficulty === 'hard' && (
+            <div className="ai-config-section">
+              <h4>🤖 AI Thinking Depth</h4>
+              <div className="depth-controls">
+                <input 
+                  type="range" 
+                  min="4" 
+                  max="8" 
+                  value={aiDepth || 6} 
+                  onChange={(e) => onAIDepthChange && onAIDepthChange(parseInt(e.target.value))}
+                  className="depth-slider"
+                />
+                <span className="depth-value">Depth: {aiDepth || 6}</span>
+              </div>
+              <div className="depth-description">
+                {(aiDepth || 6) <= 4 ? "Good strategy" : 
+                 (aiDepth || 6) <= 6 ? "Advanced strategy" : "Expert strategy"}
+              </div>
+            </div>
+          )}
         </div>
       )}
 
