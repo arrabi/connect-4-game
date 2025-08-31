@@ -163,13 +163,11 @@ function App() {
 
   const handleAI1DepthChange = useCallback((depth) => {
     setAI1Depth(depth)
-    resetGame()
-  }, [resetGame])
+  }, [])
 
   const handleAI2DepthChange = useCallback((depth) => {
     setAI2Depth(depth)
-    resetGame()
-  }, [resetGame])
+  }, [])
 
   const handleNextMove = useCallback(() => {
     if (gameMode === 'ai-vs-ai' && waitingForNextMove && !winner && !isDraw) {
