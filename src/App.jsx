@@ -5,7 +5,7 @@ import GameModeSelector from './components/GameModeSelector'
 import SoundControls from './components/SoundControls'
 import ConfirmationModal from './components/ConfirmationModal'
 import { checkWinner, checkDraw } from './utils/gameLogic'
-import { getAIMove } from './utils/aiLogic'
+import { getAIMove, getAIMoveWithDepth } from './utils/aiLogic'
 import soundManager from './utils/soundManager'
 import './App.css'
 
@@ -23,9 +23,16 @@ function App() {
   const [winningCells, setWinningCells] = useState([])
   const [isDraw, setIsDraw] = useState(false)
   const [isConfirmModalOpen, setIsConfirmModalOpen] = useState(false)
-  const [gameMode, setGameMode] = useState('2-player') // '2-player' or 'vs-ai'
+  const [gameMode, setGameMode] = useState('2-player') // '2-player', 'vs-ai', or 'ai-vs-ai'
   const [aiDifficulty, setAIDifficulty] = useState('medium')
   const [isAIThinking, setIsAIThinking] = useState(false)
+  
+  // AI vs AI mode state
+  const [ai1Depth, setAI1Depth] = useState(4)
+  const [ai2Depth, setAI2Depth] = useState(6)
+  const [ai1Thinking, setAI1Thinking] = useState(false)
+  const [ai2Thinking, setAI2Thinking] = useState(false)
+  const [waitingForNextMove, setWaitingForNextMove] = useState(false)
 
   const resetGame = useCallback(() => {
     setBoard(Array(ROWS).fill(null).map(() => Array(COLS).fill(null)))
@@ -34,6 +41,9 @@ function App() {
     setWinningCells([])
     setIsDraw(false)
     setIsAIThinking(false)
+    setAI1Thinking(false)
+    setAI2Thinking(false)
+    setWaitingForNextMove(false)
   }, [])
 
   const handleNewGameClick = useCallback(() => {
@@ -59,11 +69,30 @@ function App() {
     resetGame()
   }, [resetGame])
 
+  const handleAI1DepthChange = useCallback((depth) => {
+    setAI1Depth(depth)
+    resetGame()
+  }, [resetGame])
+
+  const handleAI2DepthChange = useCallback((depth) => {
+    setAI2Depth(depth)
+    resetGame()
+  }, [resetGame])
+
+  const handleNextMove = useCallback(() => {
+    if (gameMode === 'ai-vs-ai' && waitingForNextMove && !winner && !isDraw) {
+      setWaitingForNextMove(false)
+    }
+  }, [gameMode, waitingForNextMove, winner, isDraw])
+
   const makeMove = useCallback((col) => {
-    if (winner || isDraw || isAIThinking) return false
+    if (winner || isDraw || isAIThinking || ai1Thinking || ai2Thinking) return false
     
     // In AI mode, only allow human player (PLAYER1) moves
     if (gameMode === 'vs-ai' && currentPlayer !== PLAYER1) return false
+    
+    // In AI vs AI mode, don't allow manual moves
+    if (gameMode === 'ai-vs-ai') return false
 
     // Find the lowest empty row in the column
     let row = -1
@@ -113,7 +142,7 @@ function App() {
     // Switch players
     setCurrentPlayer(currentPlayer === PLAYER1 ? PLAYER2 : PLAYER1)
     return true
-  }, [board, currentPlayer, winner, isDraw, isAIThinking, gameMode])
+  }, [board, currentPlayer, winner, isDraw, isAIThinking, ai1Thinking, ai2Thinking, gameMode])
 
   // AI move effect - triggers when it's AI's turn in AI mode
   useEffect(() => {
@@ -189,6 +218,99 @@ function App() {
     }
   }, [board, currentPlayer, winner, isDraw, gameMode, aiDifficulty, isAIThinking])
 
+  // AI vs AI move effect - triggers when it's an AI's turn in AI vs AI mode
+  useEffect(() => {
+    if (gameMode === 'ai-vs-ai' && !winner && !isDraw && !ai1Thinking && !ai2Thinking && !waitingForNextMove) {
+      setWaitingForNextMove(true)
+      
+      // Determine which AI is thinking
+      const isPlayer1Turn = currentPlayer === PLAYER1
+      const aiDepth = isPlayer1Turn ? ai1Depth : ai2Depth
+      
+      if (isPlayer1Turn) {
+        setAI1Thinking(true)
+      } else {
+        setAI2Thinking(true)
+      }
+      
+      // Add a delay based on AI depth to make thinking feel realistic
+      const thinkingDelay = Math.max(500, aiDepth * 300)
+      
+      setTimeout(() => {
+        const aiCol = getAIMoveWithDepth(board, currentPlayer, aiDepth)
+        
+        if (aiCol !== null) {
+          // Execute AI move
+          const aiMakeMove = (col) => {
+            // Find the lowest empty row in the column
+            let row = -1
+            for (let r = ROWS - 1; r >= 0; r--) {
+              if (board[r][col] === null) {
+                row = r
+                break
+              }
+            }
+
+            if (row === -1) return false // Column is full
+
+            // Play drop sound
+            soundManager.playSound('drop')
+
+            // Create new board with the move
+            const newBoard = board.map((boardRow, rowIndex) =>
+              boardRow.map((cell, colIndex) =>
+                rowIndex === row && colIndex === col ? currentPlayer : cell
+              )
+            )
+
+            setBoard(newBoard)
+
+            // Check for winner
+            const winResult = checkWinner(newBoard, row, col, currentPlayer)
+            if (winResult) {
+              setWinner(currentPlayer)
+              setWinningCells(winResult.cells)
+              // Play win/lose sounds
+              setTimeout(() => {
+                soundManager.playSound('win')
+              }, 300)
+              setAI1Thinking(false)
+              setAI2Thinking(false)
+              setWaitingForNextMove(false)
+              return true
+            }
+
+            // Check for draw
+            if (checkDraw(newBoard)) {
+              setIsDraw(true)
+              // Play draw sound
+              setTimeout(() => {
+                soundManager.playSound('draw')
+              }, 300)
+              setAI1Thinking(false)
+              setAI2Thinking(false)
+              setWaitingForNextMove(false)
+              return true
+            }
+
+            // Switch to the other AI player
+            setCurrentPlayer(currentPlayer === PLAYER1 ? PLAYER2 : PLAYER1)
+            setAI1Thinking(false)
+            setAI2Thinking(false)
+            // Keep waitingForNextMove as true for the next AI move
+            return true
+          }
+          
+          aiMakeMove(aiCol)
+        } else {
+          setAI1Thinking(false)
+          setAI2Thinking(false)
+          setWaitingForNextMove(false)
+        }
+      }, thinkingDelay)
+    }
+  }, [board, currentPlayer, winner, isDraw, gameMode, ai1Depth, ai2Depth, ai1Thinking, ai2Thinking, waitingForNextMove])
+
   return (
     <div className="app">
       <div className="game-container">
@@ -209,9 +331,25 @@ function App() {
         <GameModeSelector
           gameMode={gameMode}
           aiDifficulty={aiDifficulty}
+          ai1Depth={ai1Depth}
+          ai2Depth={ai2Depth}
           onGameModeChange={handleGameModeChange}
           onAIDifficultyChange={handleAIDifficultyChange}
+          onAI1DepthChange={handleAI1DepthChange}
+          onAI2DepthChange={handleAI2DepthChange}
         />
+        
+        {gameMode === 'ai-vs-ai' && waitingForNextMove && !winner && !isDraw && (
+          <div className="next-move-container">
+            <button 
+              className="next-move-button"
+              onClick={handleNextMove}
+              title="Click to proceed with the next AI move"
+            >
+              ⏭️ Next Move
+            </button>
+          </div>
+        )}
         
         <GameStatus 
           currentPlayer={currentPlayer}
@@ -219,6 +357,8 @@ function App() {
           isDraw={isDraw}
           gameMode={gameMode}
           isAIThinking={isAIThinking}
+          ai1Thinking={ai1Thinking}
+          ai2Thinking={ai2Thinking}
         />
         
         <GameBoard 
