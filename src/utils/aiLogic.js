@@ -220,6 +220,102 @@ function evaluateWindow(window, player) {
   return score
 }
 
+// Get AI move with custom depth (for AI vs AI mode)
+export function getAIMoveWithDepth(board, player, depth = 6) {
+  const validColumns = getValidColumns(board)
+  if (validColumns.length === 0) return null
+
+  // If depth is 1 or less, use random move (easy AI)
+  if (depth <= 1) {
+    const randomIndex = Math.floor(Math.random() * validColumns.length)
+    return validColumns[randomIndex]
+  }
+
+  // If depth is 2-3, use medium AI strategy
+  if (depth <= 3) {
+    // First, check if AI can win in this move
+    for (const col of validColumns) {
+      const result = simulateMove(board, col, player)
+      if (result && checkWinner(result.board, result.row, col, player)) {
+        return col
+      }
+    }
+
+    // Second, check if we need to block opponent from winning
+    const opponent = player === PLAYER1 ? PLAYER2 : PLAYER1
+    for (const col of validColumns) {
+      const result = simulateMove(board, col, opponent)
+      if (result && checkWinner(result.board, result.row, col, opponent)) {
+        return col // Block the opponent
+      }
+    }
+
+    // Otherwise, make a random move
+    const randomIndex = Math.floor(Math.random() * validColumns.length)
+    return validColumns[randomIndex]
+  }
+
+  // For depth > 3, use minimax with the specified depth
+  let bestCol = validColumns[0]
+  let bestScore = -Infinity
+
+  for (const col of validColumns) {
+    const result = simulateMove(board, col, player)
+    if (result) {
+      const score = minimaxWithPlayer(result.board, depth - 1, -Infinity, Infinity, false, player)
+      if (score > bestScore) {
+        bestScore = score
+        bestCol = col
+      }
+    }
+  }
+
+  return bestCol
+}
+
+// Minimax algorithm with Alpha-Beta pruning that works for any player
+function minimaxWithPlayer(board, depth, alpha, beta, isMaximizing, aiPlayer) {
+  // Check if game is over
+  const winner = getWinnerFromBoard(board)
+  if (winner === aiPlayer) return 1000 + depth // AI wins (prefer quicker wins)
+  if (winner !== null && winner !== aiPlayer) return -1000 - depth // Opponent wins (prefer later losses)
+  if (checkDraw(board) || depth === 0) return evaluateBoardForPlayer(board, aiPlayer)
+
+  const validColumns = getValidColumns(board)
+  const opponent = aiPlayer === PLAYER1 ? PLAYER2 : PLAYER1
+  
+  if (isMaximizing) {
+    let maxScore = -Infinity
+    for (const col of validColumns) {
+      const result = simulateMove(board, col, aiPlayer)
+      if (result) {
+        const score = minimaxWithPlayer(result.board, depth - 1, alpha, beta, false, aiPlayer)
+        maxScore = Math.max(maxScore, score)
+        alpha = Math.max(alpha, score)
+        if (beta <= alpha) break // Alpha-Beta pruning
+      }
+    }
+    return maxScore
+  } else {
+    let minScore = Infinity
+    for (const col of validColumns) {
+      const result = simulateMove(board, col, opponent)
+      if (result) {
+        const score = minimaxWithPlayer(result.board, depth - 1, alpha, beta, true, aiPlayer)
+        minScore = Math.min(minScore, score)
+        beta = Math.min(beta, score)
+        if (beta <= alpha) break // Alpha-Beta pruning
+      }
+    }
+    return minScore
+  }
+}
+
+// Evaluate board position for a specific player
+function evaluateBoardForPlayer(board, player) {
+  return evaluateWindows(board, player) - evaluateWindows(board, player === PLAYER1 ? PLAYER2 : PLAYER1)
+}
+
 // Get AI move based on difficulty
 export function getAIMove(board, difficulty) {
   switch (difficulty) {

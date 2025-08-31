@@ -9,6 +9,8 @@ const GameStatus = ({
   isDraw, 
   gameMode = '2-player', 
   isAIThinking = false,
+  ai1Thinking = false,
+  ai2Thinking = false,
   player1Name = '',
   player2Name = '',
   gameDuration = 0,
@@ -38,12 +40,21 @@ const GameStatus = ({
         return winner === 'red' 
           ? '🎉 You Win! Great job!' 
           : '🤖 AI Wins! Better luck next time!'
+      } else if (gameMode === 'ai-vs-ai') {
+        return winner === 'red' 
+          ? '🔴 AI Player 1 Wins!' 
+          : '🟡 AI Player 2 Wins!'
       }
       const winnerName = winner === 'red' ? (player1Name || 'Red Player') : (player2Name || 'Yellow Player')
       return `🎉 ${winnerName} Wins!`
     }
     if (isDraw) {
-      return gameMode === 'vs-ai' ? "🤝 It's a Draw! Good game!" : "🤝 It's a Draw!"
+      if (gameMode === 'vs-ai') {
+        return "🤝 It's a Draw! Good game!"
+      } else if (gameMode === 'ai-vs-ai') {
+        return "🤝 It's a Draw! Both AIs played well!"
+      }
+      return "🤝 It's a Draw!"
     }
     if (gameMode === 'vs-ai') {
       if (isAIThinking) {
@@ -51,6 +62,13 @@ const GameStatus = ({
       }
       const playerName = player1Name || 'You'
       return currentPlayer === 'red' ? `${playerName}'s Turn` : 'AI Turn'
+    } else if (gameMode === 'ai-vs-ai') {
+      if (ai1Thinking) {
+        return '🔴 AI Player 1 is thinking...'
+      } else if (ai2Thinking) {
+        return '🟡 AI Player 2 is thinking...'
+      }
+      return currentPlayer === 'red' ? '🔴 AI Player 1 Turn' : '🟡 AI Player 2 Turn'
     }
     const playerName = currentPlayer === 'red' 
       ? (player1Name || 'Red Player') 
@@ -83,6 +101,9 @@ const GameStatus = ({
     if (winner) return winner
     if (isDraw) return 'draw'
     if (gameMode === 'vs-ai' && isAIThinking) return 'yellow' // AI thinking uses yellow
+    if (gameMode === 'ai-vs-ai' && (ai1Thinking || ai2Thinking)) {
+      return ai1Thinking ? 'red' : 'yellow'
+    }
     return currentPlayer
   }
 
@@ -181,6 +202,11 @@ const GameStatus = ({
           <div className={`current-player-indicator ${currentPlayer}`}>
             {gameMode === 'vs-ai' && isAIThinking && (
               <div className="ai-thinking-animation">🤖</div>
+            )}
+            {gameMode === 'ai-vs-ai' && (ai1Thinking || ai2Thinking) && (
+              <div className="ai-thinking-animation">
+                {ai1Thinking ? '🔴🤖' : '🟡🤖'}
+              </div>
             )}
           </div>
         )}
