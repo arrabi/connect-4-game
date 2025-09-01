@@ -30,10 +30,12 @@ function App() {
   const [aiDifficulty, setAIDifficulty] = useState('medium')
   const [isAIThinking, setIsAIThinking] = useState(false)
   const [isLeaderboardOpen, setIsLeaderboardOpen] = useState(false)
+  const [isControlsVisible, setIsControlsVisible] = useState(true)
   
   // AI vs AI mode state
   const [ai1Depth, setAI1Depth] = useState(4)
   const [ai2Depth, setAI2Depth] = useState(6)
+  const [aiDepth, setAIDepth] = useState(6) // For vs-AI hard mode
   const [ai1Thinking, setAI1Thinking] = useState(false)
   const [ai2Thinking, setAI2Thinking] = useState(false)
   const [waitingForNextMove, setWaitingForNextMove] = useState(false)
@@ -64,32 +66,23 @@ function App() {
     setGameDuration(0)
   }, [])
 
-  // Start new game with player setup
+  // Start new game with optional player setup
   const startNewGame = useCallback(() => {
-    if (gameMode === 'ai-vs-ai') {
-      // For AI vs AI mode, skip player setup entirely
-      setPlayer1Name('') // No human players
-      setPlayer2Name('')
-      setSetupPlayer(null)
-      setIsPlayerSetupOpen(false)
-      resetGame()
-    } else if (gameMode === 'vs-ai') {
-      // For vs-ai mode, only setup player 1
-      setSetupPlayer('red')
-      setIsPlayerSetupOpen(true)
-    } else {
-      // For 2-player mode, setup both players
-      setSetupPlayer('red')
-      setIsPlayerSetupOpen(true)
-    }
-  }, [gameMode, resetGame])
+    // Reset player names and start game immediately
+    setPlayer1Name('')
+    setPlayer2Name('')
+    setSetupPlayer(null)
+    setIsPlayerSetupOpen(false)
+    resetGame()
+  }, [resetGame])
 
   // Initialize player setup on first load
   useEffect(() => {
-    if (!player1Name && !gameStartTime) {
-      startNewGame()
+    if (!gameStartTime) {
+      // Start the game immediately without player setup for better UX
+      resetGame()
     }
-  }, [startNewGame, player1Name, gameStartTime])
+  }, [resetGame, gameStartTime])
 
   // Handle player setup completion
   const handlePlayerSetup = useCallback((playerName) => {
@@ -143,6 +136,15 @@ function App() {
     setIsLeaderboardOpen(false)
   }, [])
 
+  const toggleControlsVisibility = useCallback(() => {
+    setIsControlsVisible(prev => !prev)
+  }, [])
+
+  const openPlayerSetup = useCallback((player) => {
+    setSetupPlayer(player)
+    setIsPlayerSetupOpen(true)
+  }, [])
+
   const handleGameModeChange = useCallback((mode) => {
     setGameMode(mode)
     // Clear player names when switching modes
@@ -167,6 +169,10 @@ function App() {
 
   const handleAI2DepthChange = useCallback((depth) => {
     setAI2Depth(depth)
+  }, [])
+
+  const handleAIDepthChange = useCallback((depth) => {
+    setAIDepth(depth)
   }, [])
 
   const handleNextMove = useCallback(() => {
@@ -289,7 +295,14 @@ function App() {
       const aiMoveDelay = aiDifficulty === 'hard' ? 1500 : aiDifficulty === 'medium' ? 1000 : 500
       
       setTimeout(() => {
-        const aiCol = getAIMove(board, aiDifficulty)
+        let aiCol
+        if (aiDifficulty === 'hard') {
+          // Use custom depth for hard AI
+          aiCol = getAIMoveWithDepth(board, PLAYER2, aiDepth)
+        } else {
+          // Use standard difficulty logic for easy and medium
+          aiCol = getAIMove(board, aiDifficulty)
+        }
         if (aiCol !== null) {
           // Simulate AI move by calling makeMove directly with AI logic
           const aiMakeMove = (col) => {
@@ -376,7 +389,7 @@ function App() {
         }
       }, aiMoveDelay)
     }
-  }, [board, currentPlayer, winner, isDraw, gameMode, aiDifficulty, isAIThinking, gameStartTime, player1Name])
+  }, [board, currentPlayer, winner, isDraw, gameMode, aiDifficulty, aiDepth, isAIThinking, gameStartTime, player1Name])
 
   // AI vs AI move effect - triggers when it's an AI's turn in AI vs AI mode
   useEffect(() => {
@@ -490,24 +503,34 @@ function App() {
       <div className="game-container">
         <h1 className="game-title">Connect 4</h1>
         
-        <div className="top-controls">
+        <div className="controls-section">
           <button 
-            className="new-game-button"
-            onClick={handleNewGameClick}
-            title="Start a new game"
+            className="controls-toggle"
+            onClick={toggleControlsVisibility}
+            title={isControlsVisible ? "Hide controls" : "Show controls"}
           >
-            🔄 New Game
+            {isControlsVisible ? "🔽 Hide Controls" : "🔼 Show Controls"}
           </button>
           
-          <button 
-            className="leaderboard-button"
-            onClick={handleLeaderboardOpen}
-            title="View leaderboard"
-          >
-            🏆 Leaderboard
-          </button>
-          
-          <SoundControls />
+          <div className={`top-controls ${isControlsVisible ? 'visible' : 'hidden'}`}>
+            <button 
+              className="new-game-button"
+              onClick={handleNewGameClick}
+              title="Start a new game"
+            >
+              🔄 New Game
+            </button>
+            
+            <button 
+              className="leaderboard-button"
+              onClick={handleLeaderboardOpen}
+              title="View leaderboard"
+            >
+              🏆 Leaderboard
+            </button>
+            
+            <SoundControls />
+          </div>
         </div>
         
         <GameModeSelector
@@ -515,10 +538,12 @@ function App() {
           aiDifficulty={aiDifficulty}
           ai1Depth={ai1Depth}
           ai2Depth={ai2Depth}
+          aiDepth={aiDepth}
           onGameModeChange={handleGameModeChange}
           onAIDifficultyChange={handleAIDifficultyChange}
           onAI1DepthChange={handleAI1DepthChange}
           onAI2DepthChange={handleAI2DepthChange}
+          onAIDepthChange={handleAIDepthChange}
         />
         
         {gameMode === 'ai-vs-ai' && waitingForNextMove && !winner && !isDraw && (
@@ -545,6 +570,7 @@ function App() {
           player2Name={player2Name}
           gameDuration={gameDuration}
           gameStartTime={gameStartTime}
+          onOpenPlayerSetup={openPlayerSetup}
         />
         
         <GameBoard 
