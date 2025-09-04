@@ -99,7 +99,7 @@ class SoundManager {
   startBackgroundMusic() {
     if (!this.isMusicEnabled) return
     
-    // Create a simple ambient background music using Web Audio API
+    // Create an exciting dynamic background music using Web Audio API
     try {
       const audioContext = new (window.AudioContext || window.webkitAudioContext)()
       
@@ -108,8 +108,8 @@ class SoundManager {
         audioContext.resume()
       }
       
-      // Create a simple ambient loop
-      const createAmbientTone = (freq, startTime, duration) => {
+      // Create musical tone with envelope and effects
+      const createMusicalTone = (freq, startTime, duration, type = 'sine', volume = 0.15, envelope = 'smooth') => {
         const oscillator = audioContext.createOscillator()
         const gainNode = audioContext.createGain()
         
@@ -117,12 +117,19 @@ class SoundManager {
         gainNode.connect(audioContext.destination)
         
         oscillator.frequency.setValueAtTime(freq, startTime)
-        oscillator.type = 'sine'
+        oscillator.type = type
         
-        gainNode.gain.setValueAtTime(0, startTime)
-        gainNode.gain.linearRampToValueAtTime(0.05, startTime + 0.1)
-        gainNode.gain.linearRampToValueAtTime(0.05, startTime + duration - 0.1)
-        gainNode.gain.linearRampToValueAtTime(0, startTime + duration)
+        // Dynamic envelope based on type
+        if (envelope === 'percussive') {
+          gainNode.gain.setValueAtTime(0, startTime)
+          gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.01)
+          gainNode.gain.exponentialRampToValueAtTime(0.01, startTime + duration)
+        } else if (envelope === 'smooth') {
+          gainNode.gain.setValueAtTime(0, startTime)
+          gainNode.gain.linearRampToValueAtTime(volume, startTime + 0.1)
+          gainNode.gain.linearRampToValueAtTime(volume * 0.8, startTime + duration - 0.2)
+          gainNode.gain.linearRampToValueAtTime(0.01, startTime + duration)
+        }
         
         oscillator.start(startTime)
         oscillator.stop(startTime + duration)
@@ -130,26 +137,97 @@ class SoundManager {
         return oscillator
       }
 
-      // Create a simple melody loop
-      const melodyNotes = [261.63, 293.66, 329.63, 349.23] // C4, D4, E4, F4
-      const noteDuration = 2
+      // Multiple exciting melody patterns
+      const melodyPatterns = [
+        // Pattern 1: Uplifting melody in C major
+        {
+          notes: [523.25, 659.25, 783.99, 659.25, 523.25, 587.33, 659.25, 523.25], // C5, E5, G5, E5, C5, D5, E5, C5
+          durations: [0.4, 0.4, 0.8, 0.4, 0.4, 0.4, 0.4, 1.2],
+          type: 'triangle'
+        },
+        // Pattern 2: Rhythmic ascending pattern
+        {
+          notes: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25], // C4 to C5
+          durations: [0.3, 0.3, 0.3, 0.3, 0.5, 0.5, 0.5, 1.0],
+          type: 'sawtooth'
+        },
+        // Pattern 3: Descending melodic phrase
+        {
+          notes: [783.99, 659.25, 587.33, 523.25, 466.16, 392.00, 349.23, 523.25], // G5 down to F4, back to C5
+          durations: [0.5, 0.3, 0.3, 0.6, 0.3, 0.3, 0.6, 1.2],
+          type: 'triangle'
+        }
+      ]
       
-      const playMelodyLoop = () => {
+      // Bass line patterns for harmony
+      const bassPatterns = [
+        [130.81, 164.81, 196.00, 164.81], // C3, E3, G3, E3
+        [130.81, 146.83, 174.61, 130.81], // C3, D3, F3, C3
+        [196.00, 164.81, 146.83, 130.81]  // G3, E3, D3, C3
+      ]
+      
+      let currentPattern = 0
+      let measureCount = 0
+      
+      const playMusicLoop = () => {
         if (!this.isMusicEnabled) return
         
-        melodyNotes.forEach((freq, index) => {
-          createAmbientTone(freq, audioContext.currentTime + index * noteDuration, noteDuration * 0.8)
+        const pattern = melodyPatterns[currentPattern]
+        const bassPattern = bassPatterns[currentPattern % bassPatterns.length]
+        const currentTime = audioContext.currentTime
+        let noteTime = 0
+        
+        // Play melody with dynamic expression
+        pattern.notes.forEach((freq, index) => {
+          const duration = pattern.durations[index]
+          const volume = 0.12 + (Math.sin(measureCount * 0.5) * 0.03) // Dynamic volume
+          
+          createMusicalTone(
+            freq, 
+            currentTime + noteTime, 
+            duration, 
+            pattern.type, 
+            volume, 
+            'smooth'
+          )
+          noteTime += duration
         })
+        
+        // Add bass harmony
+        bassPattern.forEach((freq, index) => {
+          const bassTime = index * (noteTime / bassPattern.length)
+          createMusicalTone(
+            freq, 
+            currentTime + bassTime, 
+            noteTime / bassPattern.length * 0.8, 
+            'sine', 
+            0.08, 
+            'smooth'
+          )
+        })
+        
+        // Add subtle percussion-like accents
+        if (measureCount % 2 === 0) {
+          createMusicalTone(130.81, currentTime, 0.1, 'square', 0.05, 'percussive') // Kick-like
+          createMusicalTone(1760, currentTime + noteTime/2, 0.05, 'square', 0.03, 'percussive') // Hi-hat-like
+        }
+        
+        measureCount++
+        
+        // Rotate patterns for variety
+        if (measureCount % 4 === 0) {
+          currentPattern = (currentPattern + 1) % melodyPatterns.length
+        }
         
         // Schedule next loop
         setTimeout(() => {
           if (this.isMusicEnabled) {
-            playMelodyLoop()
+            playMusicLoop()
           }
-        }, melodyNotes.length * noteDuration * 1000)
+        }, noteTime * 1000 + 200) // Small gap between loops
       }
       
-      playMelodyLoop()
+      playMusicLoop()
       this.backgroundMusic = { audioContext, stop: () => { this.isMusicEnabled = false } }
       
     } catch (error) {
