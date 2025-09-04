@@ -96,6 +96,7 @@ class SoundManager {
   }
 
   // Background music functionality
+  // Enhanced with famous public domain melodies similar to Tetris theme
   startBackgroundMusic() {
     if (!this.isMusicEnabled) return
     
@@ -137,33 +138,47 @@ class SoundManager {
         return oscillator
       }
 
-      // Multiple exciting melody patterns
+      // Famous public domain melodies for enhanced gaming experience
       const melodyPatterns = [
-        // Pattern 1: Uplifting melody in C major
+        // Pattern 1: Korobeiniki (Tetris Theme A) - Russian Folk Song
         {
-          notes: [523.25, 659.25, 783.99, 659.25, 523.25, 587.33, 659.25, 523.25], // C5, E5, G5, E5, C5, D5, E5, C5
-          durations: [0.4, 0.4, 0.8, 0.4, 0.4, 0.4, 0.4, 1.2],
+          notes: [659.25, 493.88, 523.25, 587.33, 523.25, 493.88, 440.00, 440.00, 523.25, 659.25, 587.33, 523.25, 493.88, 493.88, 523.25, 587.33], // E5-B4-C5-D5-C5-B4-A4-A4-C5-E5-D5-C5-B4-B4-C5-D5
+          durations: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.6, 0.4, 0.4, 0.4, 0.4, 0.4, 0.6, 0.4, 0.4, 0.8],
           type: 'triangle'
         },
-        // Pattern 2: Rhythmic ascending pattern
+        // Pattern 2: Ode to Joy - Beethoven (in C major)
         {
-          notes: [261.63, 293.66, 329.63, 349.23, 392.00, 440.00, 493.88, 523.25], // C4 to C5
-          durations: [0.3, 0.3, 0.3, 0.3, 0.5, 0.5, 0.5, 1.0],
+          notes: [523.25, 523.25, 587.33, 659.25, 659.25, 587.33, 523.25, 493.88, 440.00, 440.00, 493.88, 523.25, 523.25, 493.88, 493.88], // C5-C5-D5-E5-E5-D5-C5-B4-A4-A4-B4-C5-C5-B4-B4
+          durations: [0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.4, 0.6, 0.4, 1.0],
+          type: 'sine'
+        },
+        // Pattern 3: Für Elise - Beethoven (opening phrase)
+        {
+          notes: [659.25, 622.25, 659.25, 622.25, 659.25, 493.88, 587.33, 523.25, 440.00, 440.00, 523.25, 659.25, 587.33, 523.25], // E5-D#5-E5-D#5-E5-B4-D5-C5-A4-A4-C5-E5-D5-C5
+          durations: [0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.3, 0.6, 0.3, 0.3, 0.4, 0.4, 0.8],
+          type: 'triangle'
+        },
+        // Pattern 4: Greensleeves - Traditional English Ballad
+        {
+          notes: [523.25, 659.25, 698.46, 783.99, 659.25, 587.33, 523.25, 493.88, 392.00, 392.00, 493.88, 523.25, 440.00], // C5-E5-F5-G5-E5-D5-C5-B4-G4-G4-B4-C5-A4
+          durations: [0.6, 0.4, 0.4, 0.6, 0.4, 0.4, 0.4, 0.4, 0.6, 0.4, 0.4, 0.6, 1.0],
           type: 'sawtooth'
         },
-        // Pattern 3: Descending melodic phrase
+        // Pattern 5: Canon in D - Pachelbel (simplified, in C major)
         {
-          notes: [783.99, 659.25, 587.33, 523.25, 466.16, 392.00, 349.23, 523.25], // G5 down to F4, back to C5
-          durations: [0.5, 0.3, 0.3, 0.6, 0.3, 0.3, 0.6, 1.2],
+          notes: [523.25, 392.00, 440.00, 329.63, 349.23, 261.63, 349.23, 392.00, 523.25, 659.25, 523.25, 440.00, 392.00], // C5-G4-A4-E4-F4-C4-F4-G4-C5-E5-C5-A4-G4
+          durations: [0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.5, 0.4, 0.4, 0.4, 0.4, 1.0],
           type: 'triangle'
         }
       ]
       
-      // Bass line patterns for harmony
+      // Enhanced bass line patterns for harmony with classic melodies
       const bassPatterns = [
-        [130.81, 164.81, 196.00, 164.81], // C3, E3, G3, E3
-        [130.81, 146.83, 174.61, 130.81], // C3, D3, F3, C3
-        [196.00, 164.81, 146.83, 130.81]  // G3, E3, D3, C3
+        [220.00, 164.81, 196.00, 164.81], // A3, E3, G3, E3 (for Tetris theme)
+        [130.81, 164.81, 196.00, 130.81], // C3, E3, G3, C3 (for Ode to Joy)
+        [220.00, 146.83, 174.61, 130.81], // A3, D3, F3, C3 (for Für Elise)
+        [196.00, 164.81, 130.81, 196.00], // G3, E3, C3, G3 (for Greensleeves)
+        [130.81, 196.00, 174.61, 146.83]  // C3, G3, F3, D3 (for Canon in D)
       ]
       
       let currentPattern = 0
@@ -214,8 +229,8 @@ class SoundManager {
         
         measureCount++
         
-        // Rotate patterns for variety
-        if (measureCount % 4 === 0) {
+        // Rotate patterns for variety (now with 5 classic melodies)
+        if (measureCount % 6 === 0) {
           currentPattern = (currentPattern + 1) % melodyPatterns.length
         }
         
