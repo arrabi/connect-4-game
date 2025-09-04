@@ -1,6 +1,7 @@
 // Sound Manager for Connect 4 Game
 // Uses Data URLs for sound effects to avoid external dependencies
 import * as Tone from 'tone'
+import { Midi } from '@tonejs/midi'
 
 class SoundManager {
   constructor() {
@@ -97,7 +98,14 @@ class SoundManager {
   async loadMIDIFiles() {
     try {
       // List of MIDI files to try loading
-      const potentialFiles = ['sample1.json', 'sample2.json', 'sample3.json']
+      const potentialFiles = [
+        'EliteSyncopations.mid',
+        'Fairouz_-_Addaysh_kan_fi_nas.mid', 
+        'Fairouz_-_Nassam_3alayna_al_Hawa.mid',
+        'PineappleRag.mid',
+        'TheStrenuousLife.mid',
+        'music-a-music-b-loaded-remix-.mid'
+      ]
       this.midiFiles = []
       const basePath = import.meta.env.BASE_URL || '/'
 
@@ -105,7 +113,22 @@ class SoundManager {
         try {
           const response = await fetch(`${basePath}midi/${fileName}`)
           if (response.ok) {
-            const midiData = await response.json()
+            const arrayBuffer = await response.arrayBuffer()
+            const midi = new Midi(arrayBuffer)
+            
+            // Convert MIDI data to the format expected by playMIDIFile
+            const midiData = {
+              name: midi.name || fileName.replace('.mid', ''),
+              tracks: midi.tracks.map(track => ({
+                name: track.name,
+                notes: track.notes.map(note => ({
+                  note: note.name,
+                  time: note.time,
+                  duration: note.duration
+                }))
+              }))
+            }
+            
             this.midiFiles.push({ fileName, data: midiData })
           }
         } catch (error) {
