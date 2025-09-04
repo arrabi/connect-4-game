@@ -1,0 +1,29 @@
+{
+  "title": "Happy Birthday",
+  "composer": "Mildred and Patty Hill",
+  "status": "Public Domain (as of 2016)",
+  "tempo": 120,
+  "timeSignature": "3/4",
+  "tracks": [
+    {
+      "name": "melody",
+      "channel": 0,
+      "instrument": "acoustic_grand_piano",
+      "notes": [
+        {"note": "C4", "frequency": 261.63, "start": 0.0, "duration": 0.75},
+        {"note": "C4", "frequency": 261.63, "start": 0.75, "duration": 0.25},
+        {"note": "D4", "frequency": 293.66, "start": 1.0, "duration": 1.0},
+        {"note": "C4", "frequency": 261.63, "start": 2.0, "duration": 1.0},
+        {"note": "F4", "frequency": 349.23, "start": 3.0, "duration": 1.0},
+        {"note": "E4", "frequency": 329.63, "start": 4.0, "duration": 2.0},
+        
+        {"note": "C4", "frequency": 261.63, "start": 6.0, "duration": 0.75},
+        {"note": "C4", "frequency": 261.63, "start": 6.75, "duration": 0.25},
+        {"note": "D4", "frequency": 293.66, "start": 7.0, "duration": 1.0},
+        {"note": "C4", "frequency": 261.63, "start": 8.0, "duration": 1.0},
+        {"note": "G4", "frequency": 392.00, "start": 9.0, "duration": 1.0},
+        {"note": "F4", "frequency": 349.23, "start": 10.0, "duration": 2.0}
+      ]
+    }
+  ]
+}

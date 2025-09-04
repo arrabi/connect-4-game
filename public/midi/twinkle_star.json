@@ -1,0 +1,31 @@
+{
+  "title": "Twinkle, Twinkle, Little Star",
+  "composer": "Traditional",
+  "status": "Public Domain",
+  "tempo": 120,
+  "timeSignature": "4/4",
+  "tracks": [
+    {
+      "name": "melody",
+      "channel": 0,
+      "instrument": "acoustic_grand_piano",
+      "notes": [
+        {"note": "C5", "frequency": 523.25, "start": 0.0, "duration": 0.5},
+        {"note": "C5", "frequency": 523.25, "start": 0.5, "duration": 0.5},
+        {"note": "G5", "frequency": 783.99, "start": 1.0, "duration": 0.5},
+        {"note": "G5", "frequency": 783.99, "start": 1.5, "duration": 0.5},
+        {"note": "A5", "frequency": 880.00, "start": 2.0, "duration": 0.5},
+        {"note": "A5", "frequency": 880.00, "start": 2.5, "duration": 0.5},
+        {"note": "G5", "frequency": 783.99, "start": 3.0, "duration": 1.0},
+        
+        {"note": "F5", "frequency": 698.46, "start": 4.0, "duration": 0.5},
+        {"note": "F5", "frequency": 698.46, "start": 4.5, "duration": 0.5},
+        {"note": "E5", "frequency": 659.25, "start": 5.0, "duration": 0.5},
+        {"note": "E5", "frequency": 659.25, "start": 5.5, "duration": 0.5},
+        {"note": "D5", "frequency": 587.33, "start": 6.0, "duration": 0.5},
+        {"note": "D5", "frequency": 587.33, "start": 6.5, "duration": 0.5},
+        {"note": "C5", "frequency": 523.25, "start": 7.0, "duration": 1.0}
+      ]
+    }
+  ]
+}

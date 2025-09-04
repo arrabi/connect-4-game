@@ -1,0 +1,30 @@
+{
+  "title": "Mary Had a Little Lamb",
+  "composer": "Traditional",
+  "status": "Public Domain",
+  "tempo": 120,
+  "timeSignature": "4/4",
+  "tracks": [
+    {
+      "name": "melody",
+      "channel": 0,
+      "instrument": "acoustic_grand_piano",
+      "notes": [
+        {"note": "E4", "frequency": 329.63, "start": 0.0, "duration": 0.5},
+        {"note": "D4", "frequency": 293.66, "start": 0.5, "duration": 0.5},
+        {"note": "C4", "frequency": 261.63, "start": 1.0, "duration": 0.5},
+        {"note": "D4", "frequency": 293.66, "start": 1.5, "duration": 0.5},
+        {"note": "E4", "frequency": 329.63, "start": 2.0, "duration": 0.5},
+        {"note": "E4", "frequency": 329.63, "start": 2.5, "duration": 0.5},
+        {"note": "E4", "frequency": 329.63, "start": 3.0, "duration": 1.0},
+        
+        {"note": "D4", "frequency": 293.66, "start": 4.0, "duration": 0.5},
+        {"note": "D4", "frequency": 293.66, "start": 4.5, "duration": 0.5},
+        {"note": "D4", "frequency": 293.66, "start": 5.0, "duration": 1.0},
+        {"note": "E4", "frequency": 329.63, "start": 6.0, "duration": 0.5},
+        {"note": "G4", "frequency": 392.00, "start": 6.5, "duration": 0.5},
+        {"note": "G4", "frequency": 392.00, "start": 7.0, "duration": 1.0}
+      ]
+    }
+  ]
+}
