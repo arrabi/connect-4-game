@@ -1,0 +1,19 @@
+{
+  "name": "Playful Tune",
+  "tracks": [
+    {
+      "notes": [
+        {"note": "D4", "time": 0, "duration": 0.25},
+        {"note": "F#4", "time": 0.25, "duration": 0.25},
+        {"note": "A4", "time": 0.5, "duration": 0.25},
+        {"note": "D5", "time": 0.75, "duration": 0.5},
+        {"note": "A4", "time": 1.25, "duration": 0.25},
+        {"note": "F#4", "time": 1.5, "duration": 0.25},
+        {"note": "D4", "time": 1.75, "duration": 0.5},
+        {"note": "G4", "time": 2.25, "duration": 0.5},
+        {"note": "B4", "time": 2.75, "duration": 0.5},
+        {"note": "D5", "time": 3.25, "duration": 0.75}
+      ]
+    }
+  ]
+}

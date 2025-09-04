@@ -2,6 +2,20 @@
   display: flex;
   gap: 10px;
   align-items: center;
+  flex-wrap: wrap;
+}
+
+.current-song-info {
+  font-size: 0.8rem;
+  color: #ecf0f1;
+  background: rgba(52, 73, 94, 0.8);
+  padding: 4px 8px;
+  border-radius: 12px;
+  max-width: 150px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  border: 1px solid rgba(52, 152, 219, 0.3);
 }
 
 .sound-control-button {
@@ -51,6 +65,14 @@
 
 .sound-control-button.disabled:hover {
   background: linear-gradient(135deg, #95a5a6 0%, #7f8c8d 100%);
+}
+
+.sound-control-button.next-song {
+  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+}
+
+.sound-control-button.next-song:hover {
+  background: linear-gradient(135deg, #a569bd 0%, #9b59b6 100%);
 }
 
 @media (max-width: 768px) {
