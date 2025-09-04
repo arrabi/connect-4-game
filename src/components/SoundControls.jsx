@@ -3,25 +3,25 @@ import soundManager from '../utils/soundManager'
 import './SoundControls.css'
 
 const SoundControls = () => {
-  const [soundEnabled, setSoundEnabled] = useState(true)
-  const [musicEnabled, setMusicEnabled] = useState(true)
-  const [currentSong, setCurrentSong] = useState(null)
+  // Initialize control states from the sound manager to reflect default (music off)
+  const initialStatus = soundManager.getSoundStatus()
+  const [soundEnabled, setSoundEnabled] = useState(initialStatus.soundEffects)
+  const [musicEnabled, setMusicEnabled] = useState(initialStatus.backgroundMusic)
+  const [currentSong, setCurrentSong] = useState(initialStatus.currentSong)
 
   useEffect(() => {
-    // Start background music on component mount
-    soundManager.startBackgroundMusic()
-    
-    // Update current song info
+    // Update current song info periodically. Do not auto-play music on mount — browsers
+    // require a user gesture to start audio. The user must press the music button.
     const updateSongInfo = () => {
       const status = soundManager.getSoundStatus()
       setCurrentSong(status.currentSong)
+      setMusicEnabled(status.backgroundMusic)
+      setSoundEnabled(status.soundEffects)
     }
-    
+
     const interval = setInterval(updateSongInfo, 1000)
-    
+
     return () => {
-      // Clean up on unmount
-      soundManager.stopBackgroundMusic()
       clearInterval(interval)
     }
   }, [])

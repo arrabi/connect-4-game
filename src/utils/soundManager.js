@@ -1,52 +1,78 @@
 // Sound Manager for Connect 4 Game
-// Uses Data URLs for sound effects to avoid external dependencies
-import * as Tone from 'tone'
+// Uses Web Audio API to play simple synthesized notes for MIDI playback.
+// Uses @tonejs/midi only for parsing MIDI files.
 import { Midi } from '@tonejs/midi'
 
 class SoundManager {
   constructor() {
-    this.sounds = {}
-    this.isEnabled = true
-    this.isMusicEnabled = true
-    this.backgroundMusic = null
-    this.currentSong = null
-    this.midiFiles = []
-    this.synth = null
-    this.currentPart = null
-    this.initializeSounds()
-    this.initializeMIDI()
+  this.sounds = {}
+  this.isEnabled = true
+  // Start with background music disabled to avoid browser autoplay restrictions.
+  // Music will be started by a user gesture (e.g. pressing the music button).
+  this.isMusicEnabled = false
+  this.backgroundMusic = null
+  this.currentSong = null
+  this.midiFiles = []
+  // WebAudio resources (created lazily)
+  this.audioContext = null
+  this.masterGain = null
+  this.playingNodes = [] // track active oscillators/gains for stop
+  this.currentTimers = [] // track timers for scheduling loop/next song
+  this.initializeSounds()
+  this.initializeMIDI()
   }
 
   // Simple sound generation using Web Audio API
   generateTone(frequency, duration, type = 'sine') {
     if (!this.isEnabled) return null
-    
+
     try {
-      const audioContext = new (window.AudioContext || window.webkitAudioContext)()
-      
-      // Resume audio context if suspended
-      if (audioContext.state === 'suspended') {
-        audioContext.resume()
+      // Ensure a shared AudioContext exists (created lazily)
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+        this.masterGain = this.audioContext.createGain()
+        this.masterGain.gain.value = 0.4
+        this.masterGain.connect(this.audioContext.destination)
+      } else if (this.audioContext.state === 'suspended') {
+        try {
+          this.audioContext.resume()
+        } catch (e) {
+          // ignore
+        }
       }
-      
-      const oscillator = audioContext.createOscillator()
-      const gainNode = audioContext.createGain()
-      
-      oscillator.connect(gainNode)
-      gainNode.connect(audioContext.destination)
-      
-      oscillator.frequency.setValueAtTime(frequency, audioContext.currentTime)
+
+      const now = this.audioContext.currentTime
+      const oscillator = this.audioContext.createOscillator()
+      const gainNode = this.audioContext.createGain()
+
       oscillator.type = type
-      
-      gainNode.gain.setValueAtTime(0.3, audioContext.currentTime)
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration)
-      
-      oscillator.start(audioContext.currentTime)
-      oscillator.stop(audioContext.currentTime + duration)
-      
-      return { oscillator, gainNode, audioContext }
+      oscillator.frequency.setValueAtTime(frequency, now)
+
+      gainNode.gain.setValueAtTime(0.0001, now)
+      gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.01)
+      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+
+      oscillator.connect(gainNode)
+      gainNode.connect(this.masterGain)
+
+      oscillator.start(now)
+      oscillator.stop(now + duration + 0.02)
+
+      // Track nodes briefly so they can be stopped if needed
+      this.playingNodes.push({ oscillator, gainNode })
+
+      // Clean up after stop
+      setTimeout(() => {
+        try {
+          oscillator.disconnect()
+          gainNode.disconnect()
+        } catch (e) {}
+        this.playingNodes = this.playingNodes.filter(n => n.oscillator !== oscillator)
+      }, (duration + 0.1) * 1000)
+
+      return { oscillator, gainNode }
     } catch (error) {
-      console.warn('Web Audio API not supported:', error)
+      console.warn('Web Audio API not supported or blocked:', error)
       return null
     }
   }
@@ -87,11 +113,8 @@ class SoundManager {
 
   // Initialize MIDI system
   async initializeMIDI() {
-    // Initialize Tone.js synthesizer
-    this.synth = new Tone.PolySynth().toDestination()
-    
-    // Load available MIDI files
-    await this.loadMIDIFiles()
+  // Load available MIDI files. Do NOT create audio nodes here.
+  await this.loadMIDIFiles()
   }
 
   // Load MIDI files from public/midi folder
@@ -153,7 +176,25 @@ class SoundManager {
 
   // Convert note name to frequency
   noteToFreq(noteName) {
-    return Tone.Frequency(noteName).toFrequency()
+    // Convert note name like C4 to MIDI number and then to frequency.
+    const midi = this.noteNameToMidi(noteName)
+    if (midi == null) return 440
+    return 440 * Math.pow(2, (midi - 69) / 12)
+  }
+
+  noteNameToMidi(noteName) {
+    // Examples: C4, C#4, Db3
+    const m = String(noteName).match(/^([A-Ga-g])([#b]?)(-?\d+)$/)
+    if (!m) return null
+    const note = m[1].toUpperCase()
+    const accidental = m[2]
+    const octave = parseInt(m[3], 10)
+    const base = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[note]
+    let semitone = base
+    if (accidental === '#') semitone += 1
+    if (accidental === 'b') semitone -= 1
+    const midi = (octave + 1) * 12 + (semitone % 12 + 12) % 12
+    return midi
   }
 
   playSound(soundName) {
@@ -169,14 +210,20 @@ class SoundManager {
   // MIDI Background music functionality
   async startBackgroundMusic() {
     if (!this.isMusicEnabled) return
-    
+
     try {
-      // Start Tone.js audio context
-      await Tone.start()
-      
-      // Play a random MIDI file
+      // Create or resume AudioContext (must be called after user gesture)
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+        this.masterGain = this.audioContext.createGain()
+        this.masterGain.gain.value = 0.4
+        this.masterGain.connect(this.audioContext.destination)
+      } else if (this.audioContext.state === 'suspended') {
+        await this.audioContext.resume()
+      }
+
+      // Start playback
       await this.playRandomMIDI()
-      
     } catch (error) {
       console.warn('Failed to start background music:', error)
     }
@@ -205,34 +252,62 @@ class SoundManager {
         return
       }
 
-      // Convert MIDI data to Tone.js Part
       const notes = midiData.tracks[0].notes.map(note => ({
         time: note.time,
         note: note.note,
         duration: note.duration
       }))
 
-      this.currentPart = new Tone.Part((time, note) => {
-        if (this.isMusicEnabled && this.synth) {
-          this.synth.triggerAttackRelease(note.note, note.duration, time)
-        }
-      }, notes)
-
-      // Set up looping and start playback
-      this.currentPart.loop = true
-      this.currentPart.loopEnd = notes.reduce((max, note) => 
-        Math.max(max, note.time + note.duration), 0
-      )
-      
-      // Schedule next song when this one ends
-      this.currentPart.callback = () => {
-        if (this.isMusicEnabled) {
-          setTimeout(() => this.playRandomMIDI(), 1000)
+      if (!this.audioContext) {
+        // If audio context isn't available, create it (may be suspended until user gesture)
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+        this.masterGain = this.audioContext.createGain()
+        this.masterGain.gain.value = 0.4
+        this.masterGain.connect(this.audioContext.destination)
+      } else if (this.audioContext.state === 'suspended') {
+        // Resume if suspended (may happen if AudioContext was created earlier without a user gesture)
+        try {
+          await this.audioContext.resume()
+        } catch (e) {
+          console.warn('Failed to resume AudioContext before scheduling notes:', e)
         }
       }
 
-      this.currentPart.start()
-      Tone.Transport.start()
+      // Schedule each note using Web Audio Oscillators
+      const now = this.audioContext.currentTime
+      let loopEnd = 0
+      notes.forEach(note => {
+        const start = now + note.time
+        const stop = start + (note.duration || 0.5)
+        loopEnd = Math.max(loopEnd, note.time + (note.duration || 0.5))
+
+        const freq = this.noteToFreq(note.note)
+        const osc = this.audioContext.createOscillator()
+        const gain = this.audioContext.createGain()
+
+        osc.type = 'sine'
+        osc.frequency.setValueAtTime(freq, start)
+
+        gain.gain.setValueAtTime(0.0001, start)
+        gain.gain.exponentialRampToValueAtTime(0.3, start + 0.01)
+        gain.gain.exponentialRampToValueAtTime(0.0001, stop)
+
+        osc.connect(gain)
+        gain.connect(this.masterGain)
+
+        osc.start(start)
+        osc.stop(stop + 0.02)
+
+        this.playingNodes.push({ osc, gain })
+      })
+
+      // Schedule next song after the loop ends
+      const timerId = setTimeout(() => {
+        if (this.isMusicEnabled) {
+          this.playRandomMIDI()
+        }
+      }, (loopEnd + 1) * 1000)
+      this.currentTimers.push(timerId)
 
       console.log(`Playing: ${this.currentSong?.data?.name || 'Unknown song'}`)
       
@@ -242,20 +317,31 @@ class SoundManager {
   }
 
   stopCurrentPlayback() {
-    if (this.currentPart) {
-      this.currentPart.stop()
-      this.currentPart.dispose()
-      this.currentPart = null
-    }
+    // Stop and disconnect any scheduled oscillators
+    try {
+      this.playingNodes.forEach(n => {
+        try { n.osc.stop?.() } catch (e) {}
+        try { n.osc.disconnect?.() } catch (e) {}
+        try { n.gain.disconnect?.() } catch (e) {}
+      })
+    } catch (e) {}
+    this.playingNodes = []
+
+    // Clear any scheduled timers
+    this.currentTimers.forEach(id => clearTimeout(id))
+    this.currentTimers = []
   }
 
   stopBackgroundMusic() {
     this.isMusicEnabled = false
     this.stopCurrentPlayback()
-    
-    if (Tone.Transport.state === 'started') {
-      Tone.Transport.stop()
-    }
+
+    // Optionally suspend the AudioContext to free resources
+    try {
+      if (this.audioContext && this.audioContext.state === 'running') {
+        this.audioContext.suspend()
+      }
+    } catch (e) {}
   }
 
   toggleBackgroundMusic() {
