@@ -1,0 +1,19 @@
+{
+  "name": "Gentle Breeze",
+  "tracks": [
+    {
+      "notes": [
+        {"note": "F4", "time": 0, "duration": 0.75},
+        {"note": "A4", "time": 0.75, "duration": 0.75},
+        {"note": "C5", "time": 1.5, "duration": 0.5},
+        {"note": "F5", "time": 2.0, "duration": 1.0},
+        {"note": "C5", "time": 3.0, "duration": 0.5},
+        {"note": "A4", "time": 3.5, "duration": 0.5},
+        {"note": "F4", "time": 4.0, "duration": 1.0},
+        {"note": "D4", "time": 5.0, "duration": 0.5},
+        {"note": "F4", "time": 5.5, "duration": 0.5},
+        {"note": "A4", "time": 6.0, "duration": 1.5}
+      ]
+    }
+  ]
+}
