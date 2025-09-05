@@ -23,15 +23,10 @@
 
   <div id="list"></div>
 
-  <div style="margin-top:18px">
-    <label for="manual" class="note">Paste comma-separated filenames (e.g. song1.mp3, song2.mp3):</label><br>
-    <input id="manual" type="text" placeholder="song1.mp3, song2.mp3" />
-    <button id="loadManual">Load</button>
-  </div>
-
   <script>
     const listEl = document.getElementById('list');
-    const manifestUrl = '/mp3/manifest.json';
+  const manifestUrl = 'mp3/manifest.json';
+    let currentAudio = null; // ensure only one track plays at a time
 
     async function init() {
       try {
@@ -50,9 +45,9 @@
     }
 
     function showEmptyManifest() {
-      const msg = document.createElement('div');
-      msg.className = 'note';
-      msg.textContent = 'No MP3 files found in /mp3/manifest.json. Add files to public/mp3 and update manifest.json, or paste filenames below to load locally.';
+  const msg = document.createElement('div');
+  msg.className = 'note';
+  msg.textContent = 'No MP3 files found in mp3/manifest.json. Add files to public/mp3 and update manifest.json.';
       listEl.appendChild(msg);
     }
 
@@ -64,8 +59,8 @@
       name.className = 'filename';
       name.textContent = filename;
 
-      const audio = document.createElement('audio');
-      audio.src = '/mp3/' + filename;
+  const audio = document.createElement('audio');
+  audio.src = 'mp3/' + filename;
       audio.preload = 'none';
 
       const playBtn = document.createElement('button');
@@ -86,7 +81,13 @@
 
       playBtn.addEventListener('click', async () => {
         try {
+          // Pause any other playing audio
+          if (currentAudio && currentAudio !== audio) {
+            currentAudio.pause();
+            currentAudio.currentTarget && currentAudio.currentTarget.dispatchEvent(new Event('stopped'));
+          }
           await audio.play();
+          currentAudio = audio;
           status.textContent = 'playing';
           playBtn.disabled = true;
           pauseBtn.disabled = false;
@@ -111,6 +112,7 @@
         playBtn.disabled = false;
         pauseBtn.disabled = true;
         stopBtn.disabled = true;
+        if (currentAudio === audio) currentAudio = null;
       });
 
       audio.addEventListener('ended', () => {
@@ -118,6 +120,12 @@
         playBtn.disabled = false;
         pauseBtn.disabled = true;
         stopBtn.disabled = true;
+        if (currentAudio === audio) currentAudio = null;
+      });
+
+      // custom event to handle external stop
+      audio.addEventListener('stopped', () => {
+        status.textContent = 'stopped';
       });
 
       wrapper.appendChild(name);
@@ -128,14 +136,6 @@
 
       listEl.appendChild(wrapper);
     }
-
-    document.getElementById('loadManual').addEventListener('click', () => {
-      const txt = document.getElementById('manual').value.trim();
-      if (!txt) return;
-      const files = txt.split(',').map(s => s.trim()).filter(Boolean);
-      listEl.innerHTML = '';
-      files.forEach(f => addTrack(f));
-    });
 
     init();
   </script>
