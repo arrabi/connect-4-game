@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Connect-4: MP3 Player</title>
+  <style>
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; padding: 24px; color: #111; }
+    h1 { margin-bottom: 8px }
+    .note { color: #666; font-size: 14px }
+    .track { margin: 12px 0; padding: 12px; border: 1px solid #eee; border-radius: 8px; display:flex; align-items:center; gap:12px }
+    .filename { flex: 1; font-weight: 600 }
+    button { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; background: #fafafa; cursor: pointer }
+    button.primary { background: #0b77ff; color: white; border-color: #0b77ff }
+    input[type="text"] { width: 320px; padding: 6px }
+    .controls { display:flex; gap:8px; align-items:center }
+    .status { color: #444; font-size: 13px }
+  </style>
+</head>
+<body>
+  <h1>MP3 Player</h1>
+  <p class="note">This page reads <code>/mp3/manifest.json</code> for the list of MP3 files to play (place your files in <code>public/mp3/</code> and update the manifest). If no manifest is present or it's empty, you can paste filenames below to create the player UI locally.</p>
+
+  <div id="list"></div>
+
+  <div style="margin-top:18px">
+    <label for="manual" class="note">Paste comma-separated filenames (e.g. song1.mp3, song2.mp3):</label><br>
+    <input id="manual" type="text" placeholder="song1.mp3, song2.mp3" />
+    <button id="loadManual">Load</button>
+  </div>
+
+  <script>
+    const listEl = document.getElementById('list');
+    const manifestUrl = '/mp3/manifest.json';
+
+    async function init() {
+      try {
+        const resp = await fetch(manifestUrl);
+        if (!resp.ok) throw new Error('manifest not found');
+        const files = await resp.json();
+        if (!Array.isArray(files) || files.length === 0) {
+          showEmptyManifest();
+          return;
+        }
+        files.forEach(f => addTrack(f));
+      } catch (err) {
+        console.warn('Could not load manifest:', err);
+        showEmptyManifest();
+      }
+    }
+
+    function showEmptyManifest() {
+      const msg = document.createElement('div');
+      msg.className = 'note';
+      msg.textContent = 'No MP3 files found in /mp3/manifest.json. Add files to public/mp3 and update manifest.json, or paste filenames below to load locally.';
+      listEl.appendChild(msg);
+    }
+
+    function addTrack(filename) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'track';
+
+      const name = document.createElement('div');
+      name.className = 'filename';
+      name.textContent = filename;
+
+      const audio = document.createElement('audio');
+      audio.src = '/mp3/' + filename;
+      audio.preload = 'none';
+
+      const playBtn = document.createElement('button');
+      playBtn.textContent = 'Play';
+      playBtn.className = 'primary';
+
+      const pauseBtn = document.createElement('button');
+      pauseBtn.textContent = 'Pause';
+      pauseBtn.disabled = true;
+
+      const stopBtn = document.createElement('button');
+      stopBtn.textContent = 'Stop';
+      stopBtn.disabled = true;
+
+      const status = document.createElement('div');
+      status.className = 'status';
+      status.textContent = 'idle';
+
+      playBtn.addEventListener('click', async () => {
+        try {
+          await audio.play();
+          status.textContent = 'playing';
+          playBtn.disabled = true;
+          pauseBtn.disabled = false;
+          stopBtn.disabled = false;
+        } catch (err) {
+          console.error('Play failed:', err);
+          status.textContent = 'play failed (user gesture required?)';
+        }
+      });
+
+      pauseBtn.addEventListener('click', () => {
+        audio.pause();
+        status.textContent = 'paused';
+        playBtn.disabled = false;
+        pauseBtn.disabled = true;
+      });
+
+      stopBtn.addEventListener('click', () => {
+        audio.pause();
+        audio.currentTime = 0;
+        status.textContent = 'stopped';
+        playBtn.disabled = false;
+        pauseBtn.disabled = true;
+        stopBtn.disabled = true;
+      });
+
+      audio.addEventListener('ended', () => {
+        status.textContent = 'ended';
+        playBtn.disabled = false;
+        pauseBtn.disabled = true;
+        stopBtn.disabled = true;
+      });
+
+      wrapper.appendChild(name);
+      wrapper.appendChild(playBtn);
+      wrapper.appendChild(pauseBtn);
+      wrapper.appendChild(stopBtn);
+      wrapper.appendChild(status);
+
+      listEl.appendChild(wrapper);
+    }
+
+    document.getElementById('loadManual').addEventListener('click', () => {
+      const txt = document.getElementById('manual').value.trim();
+      if (!txt) return;
+      const files = txt.split(',').map(s => s.trim()).filter(Boolean);
+      listEl.innerHTML = '';
+      files.forEach(f => addTrack(f));
+    });
+
+    init();
+  </script>
+</body>
+</html>

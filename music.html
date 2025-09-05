@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Connect-4: MIDI Player</title>
+  <style>
+    body { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; padding: 24px; color: #111; }
+    h1 { margin-bottom: 8px }
+    .note { color: #666; font-size: 14px }
+    .track { margin: 12px 0; padding: 12px; border: 1px solid #eee; border-radius: 8px; display:flex; align-items:center; gap:12px }
+    button { padding: 8px 12px; border-radius: 6px; border: 1px solid #ccc; background: #fafafa; cursor: pointer }
+    button.primary { background: #0b77ff; color: white; border-color: #0b77ff }
+    button.ghost { background: transparent }
+    .filename { font-weight: 600 }
+    .status { margin-left: 8px; color: #444; font-size: 14px }
+  </style>
+</head>
+<body>
+  <h1>MIDI Player</h1>
+  <p class="note">Click Play to load and play a MIDI file. Uses Tone.js + @tonejs/midi to synthesize in the browser. Files are served from <code>/midi/</code> (the repo's <code>public/midi/</code> folder).</p>
+
+  <div id="list"></div>
+
+  <script src="https://unpkg.com/tone/build/Tone.js"></script>
+  <script src="https://unpkg.com/@tonejs/midi/build/Midi.js"></script>
+  <script>
+    // List of MIDI files present in public/midi (kept in sync with repo)
+    const midiFiles = [
+      'EliteSyncopations.mid',
+      'Fairouz_-_Addaysh_kan_fi_nas.mid',
+      'Fairouz_-_Nassam_3alayna_al_Hawa.mid',
+      'music-a-music-b-loaded-remix-.mid',
+      'PineappleRag.mid',
+      'TheStrenuousLife.mid'
+    ];
+
+    const listEl = document.getElementById('list');
+    const players = new Map(); // filename -> {parts: [], synths: [], playing: bool}
+
+    function createRow(filename) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'track';
+
+      const name = document.createElement('div');
+      name.className = 'filename';
+      name.textContent = filename;
+
+      const playBtn = document.createElement('button');
+      playBtn.textContent = 'Play';
+      playBtn.className = 'primary';
+
+      const pauseBtn = document.createElement('button');
+      pauseBtn.textContent = 'Pause';
+      pauseBtn.className = '';
+      pauseBtn.disabled = true;
+
+      const stopBtn = document.createElement('button');
+      stopBtn.textContent = 'Stop';
+      stopBtn.disabled = true;
+
+      const status = document.createElement('div');
+      status.className = 'status';
+      status.textContent = 'idle';
+
+      playBtn.addEventListener('click', async () => {
+        await ensureAudioStarted();
+        if (!players.has(filename)) {
+          status.textContent = 'loading...';
+          try {
+            await loadMidi(filename);
+            status.textContent = 'playing';
+            playBtn.disabled = true;
+            pauseBtn.disabled = false;
+            stopBtn.disabled = false;
+          } catch (err) {
+            console.error(err);
+            status.textContent = 'error loading';
+          }
+        } else {
+          // resume
+          const p = players.get(filename);
+          if (!p.playing) {
+            Tone.Transport.start();
+            p.playing = true;
+            status.textContent = 'playing';
+            playBtn.disabled = true;
+            pauseBtn.disabled = false;
+          }
+        }
+      });
+
+      pauseBtn.addEventListener('click', () => {
+        const p = players.get(filename);
+        if (p && p.playing) {
+          Tone.Transport.pause();
+          p.playing = false;
+          status.textContent = 'paused';
+          playBtn.disabled = false;
+          pauseBtn.disabled = true;
+        }
+      });
+
+      stopBtn.addEventListener('click', () => {
+        const p = players.get(filename);
+        if (p) {
+          Tone.Transport.stop();
+          // clear scheduled events
+          p.parts.forEach(part => part.dispose());
+          p.synths.forEach(s => s.dispose());
+          players.delete(filename);
+          status.textContent = 'stopped';
+          playBtn.disabled = false;
+          pauseBtn.disabled = true;
+          stopBtn.disabled = true;
+        }
+      });
+
+      wrapper.appendChild(name);
+      wrapper.appendChild(playBtn);
+      wrapper.appendChild(pauseBtn);
+      wrapper.appendChild(stopBtn);
+      wrapper.appendChild(status);
+
+      return wrapper;
+    }
+
+    midiFiles.forEach(f => listEl.appendChild(createRow(f)));
+
+    async function ensureAudioStarted() {
+      // Tone.js requires a user gesture to start audio context
+      if (Tone.context.state !== 'running') {
+        await Tone.start();
+      }
+    }
+
+    async function loadMidi(filename) {
+      // stop transport and clear previous scheduling so only one file plays at once
+      Tone.Transport.stop();
+      Tone.Transport.cancel();
+
+      // fetch the midi from /midi/filename
+      const url = new URL('midi/' + filename, window.location.href).toString();
+      const resp = await fetch(url);
+      if (!resp.ok) throw new Error('Failed to fetch MIDI: ' + resp.status);
+      const arrayBuffer = await resp.arrayBuffer();
+      const midi = new Midi(arrayBuffer);
+
+      // prepare instruments and parts
+      const parts = [];
+      const synths = [];
+
+      // Create a master volume node to avoid clipping
+      const master = new Tone.Volume(-6).toDestination();
+
+      midi.tracks.forEach((track, idx) => {
+        if (track.notes.length === 0) return;
+        // create a simple synth for each track (PolySynth of 4 voices)
+        const synth = new Tone.PolySynth(Tone.Synth, {maxPolyphony: 8}).connect(master);
+        synths.push(synth);
+
+        const events = track.notes.map(n => ({ time: n.time, note: n.name, duration: n.duration, velocity: n.velocity }));
+
+        const part = new Tone.Part((time, value) => {
+          synth.triggerAttackRelease(value.note, value.duration, time, value.velocity);
+        }, events).start(0);
+
+        parts.push(part);
+      });
+
+      // set bpm if available
+      if (midi.header && midi.header.tempos && midi.header.tempos.length) {
+        const t = midi.header.tempos[0];
+        Tone.Transport.bpm.value = t.bpm;
+      }
+
+      // set transport bounds
+      Tone.Transport.seconds = 0;
+
+      // store
+      players.set(filename, { parts, synths, playing: true });
+
+      // start playing
+      Tone.Transport.start();
+    }
+  </script>
+</body>
+</html>
