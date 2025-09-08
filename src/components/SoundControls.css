@@ -75,6 +75,18 @@
   background: linear-gradient(135deg, #a569bd 0%, #9b59b6 100%);
 }
 
+.sound-control-button.volume-down,
+.sound-control-button.volume-up {
+  background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
+}
+
+.volume-label {
+  color: #2c3e50;
+  font-weight: 600;
+  min-width: 48px;
+  text-align: center;
+}
+
 @media (max-width: 768px) {
   .sound-control-button {
     width: 40px;

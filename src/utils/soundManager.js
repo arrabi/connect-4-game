@@ -1,347 +1,175 @@
 // Sound Manager for Connect 4 Game
-// Uses Web Audio API to play simple synthesized notes for MIDI playback.
-// Uses @tonejs/midi only for parsing MIDI files.
-import { Midi } from '@tonejs/midi'
+// Uses Web Audio / HTMLAudio for background MP3 playback and Web Audio oscillators for sound effects.
 
 class SoundManager {
   constructor() {
-  this.sounds = {}
-  this.isEnabled = true
-  // Start with background music disabled to avoid browser autoplay restrictions.
-  // Music will be started by a user gesture (e.g. pressing the music button).
-  this.isMusicEnabled = false
-  this.backgroundMusic = null
-  this.currentSong = null
-  this.midiFiles = []
-  // WebAudio resources (created lazily)
-  this.audioContext = null
-  this.masterGain = null
-  this.playingNodes = [] // track active oscillators/gains for stop
-  this.currentTimers = [] // track timers for scheduling loop/next song
-  this.initializeSounds()
-  this.initializeMIDI()
-  }
+    this.sounds = {}
+    this.isEnabled = true // sound effects
+    // Start with background music disabled to avoid autoplay restrictions.
+    this.isMusicEnabled = false
 
-  // Simple sound generation using Web Audio API
-  generateTone(frequency, duration, type = 'sine') {
-    if (!this.isEnabled) return null
+    // MP3 playlist and playback state
+    this.playlist = [] // filenames (strings) loaded from mp3/manifest.json
+    this.currentIndex = -1
+    this.bgAudio = null
+    this.musicVolume = 0.5 // 0.0 - 1.0
 
-    try {
-      // Ensure a shared AudioContext exists (created lazily)
-      if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
-        this.masterGain = this.audioContext.createGain()
-        this.masterGain.gain.value = 0.4
-        this.masterGain.connect(this.audioContext.destination)
-      } else if (this.audioContext.state === 'suspended') {
-        try {
-          this.audioContext.resume()
-        } catch (e) {
-          // ignore
-        }
-      }
+    // WebAudio resources (for sound effects)
+    this.audioContext = null
+    this.masterGain = null
 
-      const now = this.audioContext.currentTime
-      const oscillator = this.audioContext.createOscillator()
-      const gainNode = this.audioContext.createGain()
-
-      oscillator.type = type
-      oscillator.frequency.setValueAtTime(frequency, now)
-
-      gainNode.gain.setValueAtTime(0.0001, now)
-      gainNode.gain.exponentialRampToValueAtTime(0.3, now + 0.01)
-      gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration)
-
-      oscillator.connect(gainNode)
-      gainNode.connect(this.masterGain)
-
-      oscillator.start(now)
-      oscillator.stop(now + duration + 0.02)
-
-      // Track nodes briefly so they can be stopped if needed
-      this.playingNodes.push({ oscillator, gainNode })
-
-      // Clean up after stop
-      setTimeout(() => {
-        try {
-          oscillator.disconnect()
-          gainNode.disconnect()
-        } catch (e) {}
-        this.playingNodes = this.playingNodes.filter(n => n.oscillator !== oscillator)
-      }, (duration + 0.1) * 1000)
-
-      return { oscillator, gainNode }
-    } catch (error) {
-      console.warn('Web Audio API not supported or blocked:', error)
-      return null
-    }
+    this.initializeSounds()
+    this.initializeMusic()
   }
 
   initializeSounds() {
-    // Create simple sound effects using Web Audio API
+    // Keep simple synthesized effects for game events
     this.sounds = {
-      drop: () => this.generateTone(220, 0.3, 'sine'),
+      drop: () => this.generateTone(220, 0.18, 'sine'),
       win: () => this.generateWinSound(),
       lose: () => this.generateLoseSound(),
       draw: () => this.generateDrawSound()
     }
   }
 
+  // Simple sound effect generation using Web Audio API
+  generateTone(frequency, duration, type = 'sine') {
+    if (!this.isEnabled) return null
+
+    try {
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
+        this.masterGain = this.audioContext.createGain()
+        this.masterGain.gain.value = 0.4
+        this.masterGain.connect(this.audioContext.destination)
+      } else if (this.audioContext.state === 'suspended') {
+        try { this.audioContext.resume() } catch (e) {}
+      }
+
+      const now = this.audioContext.currentTime
+      const osc = this.audioContext.createOscillator()
+      const g = this.audioContext.createGain()
+
+      osc.type = type
+      osc.frequency.setValueAtTime(frequency, now)
+
+      g.gain.setValueAtTime(0.0001, now)
+      g.gain.exponentialRampToValueAtTime(0.3, now + 0.01)
+      g.gain.exponentialRampToValueAtTime(0.0001, now + duration)
+
+      osc.connect(g)
+      g.connect(this.masterGain)
+
+      osc.start(now)
+      osc.stop(now + duration + 0.02)
+
+      setTimeout(() => {
+        try { osc.disconnect(); g.disconnect() } catch (e) {}
+      }, (duration + 0.1) * 1000)
+
+      return { osc, g }
+    } catch (err) {
+      console.warn('WebAudio not available for sound effects:', err)
+      return null
+    }
+  }
+
   generateWinSound() {
     if (!this.isEnabled) return
-    
-    // Play ascending notes for victory
-    const notes = [261.63, 329.63, 392.00, 523.25] // C4, E4, G4, C5
-    notes.forEach((freq, index) => {
-      setTimeout(() => {
-        this.generateTone(freq, 0.4, 'sine')
-      }, index * 150)
-    })
+    const notes = [261.63, 329.63, 392.0, 523.25]
+    notes.forEach((f, i) => setTimeout(() => this.generateTone(f, 0.28, 'sine'), i * 140))
   }
 
   generateLoseSound() {
     if (!this.isEnabled) return
-    
-    // Play descending notes for defeat
-    const notes = [392.00, 329.63, 261.63, 196.00] // G4, E4, C4, G3
-    notes.forEach((freq, index) => {
-      setTimeout(() => {
-        this.generateTone(freq, 0.4, 'square')
-      }, index * 200)
-    })
+    const notes = [392.0, 329.63, 261.63, 196.0]
+    notes.forEach((f, i) => setTimeout(() => this.generateTone(f, 0.28, 'square'), i * 160))
   }
 
-  // Initialize MIDI system
-  async initializeMIDI() {
-  // Load available MIDI files. Do NOT create audio nodes here.
-  await this.loadMIDIFiles()
+  // Load MP3 playlist from public/mp3/manifest.json
+  async initializeMusic() {
+    await this.loadMP3Manifest()
   }
 
-  // Load MIDI files from public/midi folder
-  async loadMIDIFiles() {
+  async loadMP3Manifest() {
     try {
-      // List of MIDI files to try loading
-      const potentialFiles = [
-        'EliteSyncopations.mid',
-        'Fairouz_-_Addaysh_kan_fi_nas.mid', 
-        'Fairouz_-_Nassam_3alayna_al_Hawa.mid',
-        'PineappleRag.mid',
-        'TheStrenuousLife.mid',
-        'music-a-music-b-loaded-remix-.mid'
-      ]
-      this.midiFiles = []
       const basePath = import.meta.env.BASE_URL || '/'
-
-      for (const fileName of potentialFiles) {
-        try {
-          const response = await fetch(`${basePath}midi/${fileName}`)
-          if (response.ok) {
-            const arrayBuffer = await response.arrayBuffer()
-            const midi = new Midi(arrayBuffer)
-            
-            // Convert MIDI data to the format expected by playMIDIFile
-            const midiData = {
-              name: midi.name || fileName.replace('.mid', ''),
-              tracks: midi.tracks.map(track => ({
-                name: track.name,
-                notes: track.notes.map(note => ({
-                  note: note.name,
-                  time: note.time,
-                  duration: note.duration
-                }))
-              }))
-            }
-            
-            this.midiFiles.push({ fileName, data: midiData })
-          }
-        } catch (error) {
-          console.warn(`Failed to load MIDI file ${fileName}:`, error)
-        }
+      const manifestUrl = `${basePath}mp3/manifest.json`
+      const resp = await fetch(manifestUrl)
+      if (!resp.ok) {
+        console.warn('MP3 manifest not found at', manifestUrl)
+        this.playlist = []
+        return
       }
-
-      console.log(`Loaded ${this.midiFiles.length} MIDI files`)
-    } catch (error) {
-      console.warn('Failed to load MIDI files:', error)
+      const files = await resp.json()
+      if (!Array.isArray(files)) {
+        console.warn('MP3 manifest is not an array')
+        this.playlist = []
+        return
+      }
+      this.playlist = files.slice()
+      if (this.playlist.length > 0) this.currentIndex = 0
+      console.log(`Loaded ${this.playlist.length} MP3 files from manifest`)
+    } catch (err) {
+      console.warn('Failed to load MP3 manifest:', err)
+      this.playlist = []
     }
   }
 
-  // Get a random MIDI file
-  getRandomMIDIFile() {
-    if (this.midiFiles.length === 0) {
-      return null
-    }
-    const randomIndex = Math.floor(Math.random() * this.midiFiles.length)
-    return this.midiFiles[randomIndex]
-  }
-
-  // Convert note name to frequency
-  noteToFreq(noteName) {
-    // Convert note name like C4 to MIDI number and then to frequency.
-    const midi = this.noteNameToMidi(noteName)
-    if (midi == null) return 440
-    return 440 * Math.pow(2, (midi - 69) / 12)
-  }
-
-  noteNameToMidi(noteName) {
-    // Examples: C4, C#4, Db3
-    const m = String(noteName).match(/^([A-Ga-g])([#b]?)(-?\d+)$/)
-    if (!m) return null
-    const note = m[1].toUpperCase()
-    const accidental = m[2]
-    const octave = parseInt(m[3], 10)
-    const base = { C: 0, D: 2, E: 4, F: 5, G: 7, A: 9, B: 11 }[note]
-    let semitone = base
-    if (accidental === '#') semitone += 1
-    if (accidental === 'b') semitone -= 1
-    const midi = (octave + 1) * 12 + (semitone % 12 + 12) % 12
-    return midi
-  }
-
-  playSound(soundName) {
-    if (!this.isEnabled || !this.sounds[soundName]) return
-    
-    try {
-      this.sounds[soundName]()
-    } catch (error) {
-      console.warn('Failed to play sound:', error)
-    }
-  }
-
-  // MIDI Background music functionality
+  // Background music control (MP3)
   async startBackgroundMusic() {
     if (!this.isMusicEnabled) return
-
-    try {
-      // Create or resume AudioContext (must be called after user gesture)
-      if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
-        this.masterGain = this.audioContext.createGain()
-        this.masterGain.gain.value = 0.4
-        this.masterGain.connect(this.audioContext.destination)
-      } else if (this.audioContext.state === 'suspended') {
-        await this.audioContext.resume()
-      }
-
-      // Start playback
-      await this.playRandomMIDI()
-    } catch (error) {
-      console.warn('Failed to start background music:', error)
-    }
-  }
-
-  async playRandomMIDI() {
-    if (!this.isMusicEnabled) return
-
-    const midiFile = this.getRandomMIDIFile()
-    if (!midiFile) {
-      console.warn('No MIDI files available')
+    if (!this.playlist || this.playlist.length === 0) {
+      console.warn('No MP3 playlist available')
       return
     }
 
-    this.currentSong = midiFile
-    await this.playMIDIFile(midiFile.data)
+    // Create audio element if needed
+    if (!this.bgAudio) {
+      this.bgAudio = new Audio()
+      this.bgAudio.preload = 'auto'
+      this.bgAudio.addEventListener('ended', () => this._onTrackEnded())
+      this.bgAudio.addEventListener('error', (e) => console.warn('Background audio error', e))
+    }
+
+    // Ensure index is valid
+    if (this.currentIndex < 0 || this.currentIndex >= this.playlist.length) this.currentIndex = 0
+
+    const basePath = import.meta.env.BASE_URL || '/'
+    this.bgAudio.src = `${basePath}mp3/${this.playlist[this.currentIndex]}`
+    this.bgAudio.volume = this.musicVolume
+    try {
+      await this.bgAudio.play()
+    } catch (err) {
+      console.warn('Auto-play prevented; user gesture required to start music:', err)
+    }
   }
 
-  async playMIDIFile(midiData) {
-    try {
-      // Stop current playback
-      this.stopCurrentPlayback()
-
-      if (!midiData.tracks || midiData.tracks.length === 0) {
-        console.warn('Invalid MIDI data')
-        return
-      }
-
-      const notes = midiData.tracks[0].notes.map(note => ({
-        time: note.time,
-        note: note.note,
-        duration: note.duration
-      }))
-
-      if (!this.audioContext) {
-        // If audio context isn't available, create it (may be suspended until user gesture)
-        this.audioContext = new (window.AudioContext || window.webkitAudioContext)()
-        this.masterGain = this.audioContext.createGain()
-        this.masterGain.gain.value = 0.4
-        this.masterGain.connect(this.audioContext.destination)
-      } else if (this.audioContext.state === 'suspended') {
-        // Resume if suspended (may happen if AudioContext was created earlier without a user gesture)
-        try {
-          await this.audioContext.resume()
-        } catch (e) {
-          console.warn('Failed to resume AudioContext before scheduling notes:', e)
-        }
-      }
-
-      // Schedule each note using Web Audio Oscillators
-      const now = this.audioContext.currentTime
-      let loopEnd = 0
-      notes.forEach(note => {
-        const start = now + note.time
-        const stop = start + (note.duration || 0.5)
-        loopEnd = Math.max(loopEnd, note.time + (note.duration || 0.5))
-
-        const freq = this.noteToFreq(note.note)
-        const osc = this.audioContext.createOscillator()
-        const gain = this.audioContext.createGain()
-
-        osc.type = 'sine'
-        osc.frequency.setValueAtTime(freq, start)
-
-        gain.gain.setValueAtTime(0.0001, start)
-        gain.gain.exponentialRampToValueAtTime(0.3, start + 0.01)
-        gain.gain.exponentialRampToValueAtTime(0.0001, stop)
-
-        osc.connect(gain)
-        gain.connect(this.masterGain)
-
-        osc.start(start)
-        osc.stop(stop + 0.02)
-
-        this.playingNodes.push({ osc, gain })
-      })
-
-      // Schedule next song after the loop ends
-      const timerId = setTimeout(() => {
-        if (this.isMusicEnabled) {
-          this.playRandomMIDI()
-        }
-      }, (loopEnd + 1) * 1000)
-      this.currentTimers.push(timerId)
-
-      console.log(`Playing: ${this.currentSong?.data?.name || 'Unknown song'}`)
-      
-    } catch (error) {
-      console.warn('Failed to play MIDI file:', error)
+  _onTrackEnded() {
+    if (!this.isMusicEnabled) return
+    // advance to next track
+    this.currentIndex = (this.currentIndex + 1) % this.playlist.length
+    // start next track
+    if (this.bgAudio) {
+      const basePath = import.meta.env.BASE_URL || '/'
+      this.bgAudio.src = `${basePath}mp3/${this.playlist[this.currentIndex]}`
+      // play may need user gesture; try
+      this.bgAudio.play().catch(e => {})
     }
   }
 
   stopCurrentPlayback() {
-    // Stop and disconnect any scheduled oscillators
     try {
-      this.playingNodes.forEach(n => {
-        try { n.osc.stop?.() } catch (e) {}
-        try { n.osc.disconnect?.() } catch (e) {}
-        try { n.gain.disconnect?.() } catch (e) {}
-      })
+      if (this.bgAudio) {
+        this.bgAudio.pause()
+        this.bgAudio.currentTime = 0
+      }
     } catch (e) {}
-    this.playingNodes = []
-
-    // Clear any scheduled timers
-    this.currentTimers.forEach(id => clearTimeout(id))
-    this.currentTimers = []
   }
 
   stopBackgroundMusic() {
     this.isMusicEnabled = false
     this.stopCurrentPlayback()
-
-    // Optionally suspend the AudioContext to free resources
-    try {
-      if (this.audioContext && this.audioContext.state === 'running') {
-        this.audioContext.suspend()
-      }
-    } catch (e) {}
   }
 
   toggleBackgroundMusic() {
@@ -354,12 +182,36 @@ class SoundManager {
     return this.isMusicEnabled
   }
 
-  // Play next song
+  // Play next song in the playlist
   async nextSong() {
+    if (!this.playlist || this.playlist.length === 0) return
     if (!this.isMusicEnabled) return
-    
-    console.log('Playing next song...')
-    await this.playRandomMIDI()
+
+    this.currentIndex = (this.currentIndex + 1) % this.playlist.length
+    if (!this.bgAudio) return this.startBackgroundMusic()
+
+    const basePath = import.meta.env.BASE_URL || '/'
+    this.bgAudio.src = `${basePath}mp3/${this.playlist[this.currentIndex]}`
+    try { await this.bgAudio.play() } catch (e) {}
+  }
+
+  // Volume controls for background music
+  increaseVolume(step = 0.1) {
+    this.setVolume((this.musicVolume || 0) + step)
+  }
+
+  decreaseVolume(step = 0.1) {
+    this.setVolume((this.musicVolume || 0) - step)
+  }
+
+  setVolume(value) {
+    this.musicVolume = Math.min(1, Math.max(0, value))
+    if (this.bgAudio) this.bgAudio.volume = this.musicVolume
+    return this.musicVolume
+  }
+
+  getVolume() {
+    return this.musicVolume
   }
 
   toggleSoundEffects() {
@@ -371,7 +223,8 @@ class SoundManager {
     return {
       soundEffects: this.isEnabled,
       backgroundMusic: this.isMusicEnabled,
-      currentSong: this.currentSong?.data?.name || null
+      currentSong: this.playlist?.[this.currentIndex] || null,
+      volume: this.musicVolume
     }
   }
 }

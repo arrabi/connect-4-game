@@ -20,5 +20,11 @@ body {
 
 #root {
   width: 100%;
-  max-width: 600px;
+  /* Increase desktop max width so top controls (music buttons) fit comfortably */
+  max-width: 1000px;
+}
+
+/* Keep a reasonable max width on small screens */
+@media (max-width: 768px) {
+  #root { max-width: 600px; }
 }
