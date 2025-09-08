@@ -16,7 +16,7 @@ const GameBoard = ({ board, onColumnClick, winningCells, currentPlayer, gameOver
 
   const handleColumnClick = (col) => {
     if (gameOver) return
-    onColumnClick(col)
+  onColumnClick(col)
   }
 
   const getColumnPreview = (col) => {
@@ -55,33 +55,39 @@ const GameBoard = ({ board, onColumnClick, winningCells, currentPlayer, gameOver
   // Handle pointer start (mouse down or touch start)
   const handlePointerStart = useCallback((e) => {
     if (gameOver) return
-    
-    e.preventDefault()
+
+    // Only prevent default for touch events to avoid blocking mouse clicks on desktop
+    const isTouchEvent = !!(e.touches && e.touches.length)
+    if (isTouchEvent) e.preventDefault()
+
     const clientX = e.clientX || (e.touches && e.touches[0]?.clientX)
     if (!clientX) return
-    
-    const column = getColumnFromPosition(clientX)
+
+  const column = getColumnFromPosition(clientX)
     if (column !== null && getColumnPreview(column) !== null) {
       setIsDragging(true)
       setDragColumn(column)
       setShowFloatingCoin(true)
-      setDragPosition({ x: clientX, y: e.clientY || e.touches[0]?.clientY || 0 })
+      setDragPosition({ x: clientX, y: e.clientY || (e.touches && e.touches[0]?.clientY) || 0 })
     }
   }, [gameOver, getColumnFromPosition, getColumnPreview])
 
   // Handle pointer move
   const handlePointerMove = useCallback((e) => {
     if (!isDragging) return
-    
-    e.preventDefault()
+
+    // Only prevent default for touch moves
+    const isTouchEvent = !!(e.touches && e.touches.length)
+    if (isTouchEvent) e.preventDefault()
+
     const clientX = e.clientX || (e.touches && e.touches[0]?.clientX)
     const clientY = e.clientY || (e.touches && e.touches[0]?.clientY)
-    
+
     if (!clientX || !clientY) return
-    
+
     const column = getColumnFromPosition(clientX)
-    
-    if (column !== null && getColumnPreview(column) !== null) {
+
+  if (column !== null && getColumnPreview(column) !== null) {
       setDragColumn(column)
       setShowFloatingCoin(true)
     } else {
@@ -89,19 +95,22 @@ const GameBoard = ({ board, onColumnClick, winningCells, currentPlayer, gameOver
       setShowFloatingCoin(false)
     }
     
+
     setDragPosition({ x: clientX, y: clientY })
   }, [isDragging, getColumnFromPosition, getColumnPreview])
 
   // Handle pointer end (mouse up or touch end)
   const handlePointerEnd = useCallback((e) => {
     if (!isDragging) return
-    
-    e.preventDefault()
-    
+
+    // Only prevent default for touch end
+    const isTouchEvent = !!(e.changedTouches && e.changedTouches.length)
+    if (isTouchEvent) e.preventDefault()
+
     if (dragColumn !== null && getColumnPreview(dragColumn) !== null) {
       onColumnClick(dragColumn)
     }
-    
+
     setIsDragging(false)
     setDragColumn(null)
     setShowFloatingCoin(false)

@@ -227,6 +227,27 @@ class SoundManager {
       volume: this.musicVolume
     }
   }
+
+  // Play a named sound effect (wrapper for this.sounds)
+  playSound(name) {
+    if (!name) return
+    // Do not play sound effects when disabled
+    if (!this.isEnabled) return
+
+    const fn = this.sounds && this.sounds[name]
+    if (typeof fn === 'function') {
+      try {
+        return fn()
+      } catch (err) {
+        console.warn('Error playing sound', name, err)
+      }
+    } else {
+      // Unknown sound name — no-op but log in dev
+      if (process && process.env && process.env.NODE_ENV !== 'production') {
+        console.warn('Unknown sound requested:', name)
+      }
+    }
+  }
 }
 
 // Create a singleton instance

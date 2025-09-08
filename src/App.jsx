@@ -50,6 +50,7 @@ function App() {
   const [gameStartTime, setGameStartTime] = useState(null)
   const [gameEndTime, setGameEndTime] = useState(null)
   const [gameDuration, setGameDuration] = useState(0)
+  
 
   const resetGame = useCallback(() => {
     setBoard(Array(ROWS).fill(null).map(() => Array(COLS).fill(null)))
@@ -200,6 +201,8 @@ function App() {
     }
 
     if (row === -1) return false // Column is full
+
+    
 
     // Play drop sound
     soundManager.playSound('drop')
