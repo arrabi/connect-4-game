@@ -1,0 +1,22 @@
+{
+  "name": "Connect 4 Game",
+  "short_name": "Connect4",
+  "start_url": "/connect-4-game/",
+  "scope": "/connect-4-game/",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "description": "Play Connect 4 in your browser - offline-capable Progressive Web App.",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%233498db'/%3E%3Ccircle cx='50' cy='50' r='20' fill='%23e74c3c'/%3E%3C/svg%3E",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%233498db'/%3E%3Ccircle cx='50' cy='50' r='20' fill='%23e74c3c'/%3E%3C/svg%3E",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}
